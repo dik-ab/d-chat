@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs';
 import { RobotIcon } from './index';
 
 const meta: Meta<typeof RobotIcon> = {
-  title: 'Icon/RobotIcon',
+  title: 'ICON/robot',
   component: RobotIcon,
   parameters: {
     layout: 'centered',

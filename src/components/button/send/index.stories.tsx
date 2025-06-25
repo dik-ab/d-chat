@@ -4,7 +4,7 @@ import { SendButton } from './index';
 import { theme } from '../../../theme/theme';
 
 const meta: Meta<typeof SendButton> = {
-  title: 'Button/SendButton',
+  title: 'BUTTON/send',
   component: SendButton,
   parameters: {
     layout: 'centered',

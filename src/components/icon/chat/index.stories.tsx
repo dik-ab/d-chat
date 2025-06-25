@@ -4,7 +4,7 @@ import { ChatIcon } from './index';
 import { theme } from '../../../theme/theme';
 
 const meta: Meta<typeof ChatIcon> = {
-  title: 'Icon/ChatIcon',
+  title: 'ICON/chat',
   component: ChatIcon,
   parameters: {
     layout: 'centered',
@@ -14,7 +14,6 @@ const meta: Meta<typeof ChatIcon> = {
       },
     },
   },
-  tags: ['autodocs'],
   decorators: [
     (Story) => (
       <ThemeProvider theme={theme}>
