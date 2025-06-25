@@ -42,7 +42,7 @@ const generateDerivedColors = (primaryColor: string) => {
   return {
     // 左上・右下グラデーション用の色（70%透明度）
     gradientColor: `rgba(${Math.floor(lighterR)}, ${Math.floor(lighterG)}, ${Math.floor(lighterB)}, 0.7)`,
-    overlayColor: `rgba(${Math.floor(overlayR)}, ${Math.floor(overlayG)}, ${Math.floor(overlayB)}, 0.4)`,
+    overlayColor: `rgba(${Math.floor(overlayR)}, ${Math.floor(overlayG)}, ${Math.floor(overlayB)}, 0.7)`,
 
   };
 };
@@ -68,8 +68,8 @@ const StyledChatBackground = styled(Box)<{
     overflow: 'hidden',
     background: `
       linear-gradient(135deg, transparent 0%, ${colors.overlayColor} 40%),
-      radial-gradient(circle at ${leftTopX + gradientSize/2}px ${leftTopY + gradientSize/2}px, #ffffff 0%, ${colors.gradientColor} 40%, transparent 70%),
-      radial-gradient(circle at ${rightBottomX + gradientSize/2}px ${rightBottomY + gradientSize/2}px, #ffffff 0%, ${colors.gradientColor} 40%, transparent 70%),
+      radial-gradient(circle at ${leftTopX + gradientSize/2}px ${leftTopY + gradientSize/2}px, #ffffff 0%, ${colors.gradientColor} 27%, transparent 70%),
+      radial-gradient(circle at ${rightBottomX + gradientSize/2}px ${rightBottomY + gradientSize/2}px, #ffffff 0%, ${colors.gradientColor} 50%, transparent 70%),
       #ffffff
     `,
     backgroundSize: `
