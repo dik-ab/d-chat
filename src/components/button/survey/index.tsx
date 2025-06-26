@@ -16,7 +16,7 @@ const StyledSurveyButton = styled(Button)(() => ({
   width: '224px',
   height: '51px',
   padding: '9px 36px',
-  background: 'radial-gradient(ellipse at 40% 20%, rgba(199,231,231,0.15),rgba(199,231,231,0.8))',
+  background: 'radial-gradient(ellipse at 30% 20%, rgba(199,231,231,0.15),rgba(199,231,231,0.8))',
   border: 'none',
   borderRadius: '8px',
   display: 'flex',
@@ -30,7 +30,7 @@ const StyledSurveyButton = styled(Button)(() => ({
   boxShadow: 'none',
   transition: 'all 0.2s ease',
   '&:hover': {
-    background: 'radial-gradient(ellipse at 40% 20%, rgba(199,231,231,0.15),rgba(199,231,231,0.8)',
+    background: 'radial-gradient(ellipse at 30% 20%, rgba(199,231,231,0.15),rgba(199,231,231,0.8)',
     boxShadow: 'none',
   },
   '&:active': {
