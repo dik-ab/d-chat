@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, Box } from '@mui/material';
+import { Avatar } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 interface RobotIconProps {

@@ -15,14 +15,6 @@ interface ChatBackgroundProps {
   className?: string;
 }
 
-// 16進数カラーをRGBAに変換する関数
-const hexToRgba = (hex: string, alpha: number): string => {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
 // メインカラーから派生色を生成する関数
 const generateDerivedColors = (primaryColor: string) => {
   const r = parseInt(primaryColor.slice(1, 3), 16);

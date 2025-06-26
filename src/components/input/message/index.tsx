@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
-import { Box, TextField, IconButton, TextareaAutosize } from '@mui/material';
+import { Box, IconButton, TextareaAutosize } from '@mui/material';
 import { SendButton } from '../../button/send';
 import { MicIcon } from '../../icon/mic';
 
