@@ -75,8 +75,8 @@ const ButtonContainer = styled(Box)({
 });
 
 const MicButton = styled(IconButton)({
-  width: '48px',
-  height: '48px',
+  width: '44px',
+  height: '44px',
   backgroundColor: '#F2F4F5',
   borderRadius: '12px',
   '&:hover': {
@@ -124,7 +124,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === 'Enter' && event.shiftKey) {
       event.preventDefault();
       handleSend();
     }
@@ -160,7 +160,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           <SendButton
             onClick={handleSend}
             disabled={disabled || !value.trim()}
-            size={36}
+            size={44}
           />
         )}
       </ButtonContainer>
