@@ -47,21 +47,29 @@ const InnerContainer = styled(MuiContainer)({
 // フォームコンテナ
 const FormContainer = styled(Box)({
   display: 'flex',
-  alignItems: 'flex-end',
-  gap: '8px',
+  alignItems: 'center',
+  gap: '12px',
+});
+
+// 入力欄コンテナ
+const InputContainer = styled(Box)({
+  flex: 1,
   borderRadius: '24px',
   backgroundColor: '#F5F5F5',
   paddingTop: '4px',
   paddingLeft: '16px',
-  paddingRight: '6px',
+  paddingRight: '16px',
   paddingBottom: '4px',
+  display: 'flex',
+  alignItems: 'center',
+  minHeight: '44px',
   '&:focus-within': {
     outline: '2px solid #1976D2',
   },
 });
 
 const StyledTextArea = styled(TextareaAutosize)({
-  flex: 1,
+  width: '100%',
   resize: 'none',
   backgroundColor: 'transparent',
   border: 'none',
@@ -74,6 +82,7 @@ const StyledTextArea = styled(TextareaAutosize)({
   '&::placeholder': {
     color: '#8E8E8E',
     opacity: 1,
+    textAlign: 'left',
   },
   '&:disabled': {
     color: '#CCCCCC',
@@ -158,15 +167,17 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       <InnerContainer>
         <form onSubmit={handleFormSubmit}>
           <FormContainer>
-            <StyledTextArea
-              minRows={1}
-              maxRows={10}
-              value={value}
-              placeholder={placeholder}
-              disabled={disabled}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-            />
+            <InputContainer>
+              <StyledTextArea
+                minRows={1}
+                maxRows={10}
+                value={value}
+                placeholder={placeholder}
+                disabled={disabled}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+              />
+            </InputContainer>
             <SendButtonContainer>
               {isMicMode ? (
                 <MicButton
