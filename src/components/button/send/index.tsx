@@ -16,7 +16,9 @@ interface SendButtonProps {
   className?: string;
 }
 
-const StyledSendButton = styled(IconButton)<{ 
+const StyledSendButton = styled(IconButton, {
+  shouldForwardProp: (prop) => !['backgroundColor', 'buttonSize'].includes(prop as string),
+})<{ 
   backgroundColor: string; 
   buttonSize: number; 
 }>(({ backgroundColor, buttonSize }) => ({

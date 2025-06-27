@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
-import { Box, IconButton, TextareaAutosize } from '@mui/material';
+import { Box, IconButton, TextareaAutosize, Container as MuiContainer } from '@mui/material';
 import { SendButton } from '../../button/send';
 import { MicIcon } from '../../icon/mic';
 
@@ -23,60 +23,81 @@ interface MessageInputProps {
   className?: string;
 }
 
-const Container = styled(Box)({
+// 画面下部に固定されるコンテナ
+const FixedBottomContainer = styled(Box)({
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  zIndex: 40,
+  minHeight: '64px',
+  width: '100%',
+  borderTop: '1px solid #E0E0E0',
   backgroundColor: '#FFFFFF',
-  borderRadius: '12px',
-  padding: '4px',
-  display: 'flex',
-  alignItems: 'flex-end',
-  gap: '4px',
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
 });
 
-const InputContainer = styled(Box)({
-  flex: 1,
+// 内部コンテナ
+const InnerContainer = styled(MuiContainer)({
+  maxWidth: '448px', // max-w-md相当
+  paddingLeft: '16px',
+  paddingRight: '16px',
+  paddingTop: '8px',
+  paddingBottom: '8px',
+});
+
+// フォームコンテナ
+const FormContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
-  width: '375px',
+  gap: '12px',
+});
+
+// 入力欄コンテナ
+const InputContainer = styled(Box)({
+  flex: 1,
+  borderRadius: '24px',
+  backgroundColor: '#F5F5F5',
+  paddingTop: '4px',
+  paddingLeft: '16px',
+  paddingRight: '16px',
+  paddingBottom: '4px',
+  display: 'flex',
+  alignItems: 'center',
+  minHeight: '44px',
+  '&:focus-within': {
+    outline: '2px solid #1976D2',
+  },
 });
 
 const StyledTextArea = styled(TextareaAutosize)({
   width: '100%',
-  backgroundColor: '#F2F4F5',
+  resize: 'none',
+  backgroundColor: 'transparent',
   border: 'none',
-  borderRadius: '12px',
+  outline: 'none',
   fontSize: '14px',
   fontFamily: 'inherit',
-  padding: '12px',
-  resize: 'none',
-  outline: 'none',
+  paddingTop: '8px',
+  paddingBottom: '8px',
   lineHeight: 1.5,
-  minHeight: '20px',
   '&::placeholder': {
     color: '#8E8E8E',
     opacity: 1,
-  },
-  '&:focus': {
-    backgroundColor: '#F2F4F5',
-    outline: 'none',
+    textAlign: 'left',
   },
   '&:disabled': {
-    backgroundColor: '#E8EAEB',
     color: '#CCCCCC',
   },
 });
 
-const ButtonContainer = styled(Box)({
+const SendButtonContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
   flexShrink: 0,
 });
 
 const MicButton = styled(IconButton)({
-  width: '48px',
-  height: '48px',
+  width: '44px',
+  height: '44px',
   backgroundColor: '#F2F4F5',
   borderRadius: '12px',
   '&:hover': {
@@ -87,11 +108,11 @@ const MicButton = styled(IconButton)({
 /**
  * メッセージ入力コンポーネント
  * 
- * テキスト入力欄と送信ボタン、マイクボタンを含むメッセージ入力フォームです。
+ * 画面下部に固定され、上に向かって伸びるメッセージ入力フォームです。
  * 入力欄は自動的に高さが調整され、複数行の入力に対応します。
  */
 export const MessageInput: React.FC<MessageInputProps> = ({
-  placeholder = '質問を入力してください...',
+  placeholder = 'メッセージを入力',
   onSend,
   onMicClick,
   onChange,
@@ -124,7 +145,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === 'Enter' && event.shiftKey) {
       event.preventDefault();
       handleSend();
     }
@@ -134,37 +155,50 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     onMicClick?.();
   };
 
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!disabled) {
+      handleSend();
+    }
+  };
+
   return (
-    <Container className={className}>
-      <InputContainer>
-        <StyledTextArea
-          minRows={1}
-          value={value}
-          placeholder={placeholder}
-          disabled={disabled}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-        />
-      </InputContainer>
-      
-      <ButtonContainer>
-        {isMicMode ? (
-          <MicButton
-            onClick={handleMicClick}
-            disabled={disabled}
-            aria-label="音声入力"
-          >
-            <MicIcon size={24} />
-          </MicButton>
-        ) : (
-          <SendButton
-            onClick={handleSend}
-            disabled={disabled || !value.trim()}
-            size={36}
-          />
-        )}
-      </ButtonContainer>
-    </Container>
+    <FixedBottomContainer className={className}>
+      <InnerContainer>
+        <form onSubmit={handleFormSubmit}>
+          <FormContainer>
+            <InputContainer>
+              <StyledTextArea
+                minRows={1}
+                maxRows={10}
+                value={value}
+                placeholder={placeholder}
+                disabled={disabled}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+              />
+            </InputContainer>
+            <SendButtonContainer>
+              {isMicMode ? (
+                <MicButton
+                  onClick={handleMicClick}
+                  disabled={disabled}
+                  aria-label="音声入力"
+                >
+                  <MicIcon size={24} />
+                </MicButton>
+              ) : (
+                <SendButton
+                  onClick={handleSend}
+                  disabled={disabled || !value.trim()}
+                  size={44}
+                />
+              )}
+            </SendButtonContainer>
+          </FormContainer>
+        </form>
+      </InnerContainer>
+    </FixedBottomContainer>
   );
 };
 
