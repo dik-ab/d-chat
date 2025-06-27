@@ -85,7 +85,7 @@ const MessageText = styled(Typography)(() => ({
  */
 export const CompanyMessage: React.FC<CompanyMessageProps> = ({
   message,
-  color = '#C3E5E3',
+  color = '#00A79E',
   className = '',
 }) => {
   
