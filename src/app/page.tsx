@@ -71,7 +71,11 @@ export default function Home() {
           padding: 0
         }}
       >
-        <ChatBackground width={374} height={704}>
+        <ChatBackground 
+          width={374} 
+          height={704}
+          primaryColor={theme.palette.brand.primary}
+        >
           {/* ヘッダー */}
           <Box
             sx={{
@@ -125,8 +129,7 @@ export default function Home() {
                 ) : (
                   <CompanyMessage 
                     message={message.content}
-                    backgroundColor="#F0F0F0"
-                    iconBackgroundColor="#C3E5E3"
+                    color={theme.palette.brand.primary}
                   />
                 )}
               </Box>

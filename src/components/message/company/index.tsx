@@ -1,15 +1,14 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
+import chroma from 'chroma-js';
 import { RobotIcon } from '../../icon/robot';
 
 interface CompanyMessageProps {
   /** メッセージテキスト */
   message: string;
-  /** 背景色（16進数） */
-  backgroundColor?: string;
-  /** アイコンの背景色（16進数） */
-  iconBackgroundColor?: string;
+  /** メインカラー（16進数）- このカラーから背景色とアイコン背景色を動的に生成 */
+  color?: string;
   /** クラス名 */
   className?: string;
 }
@@ -59,7 +58,7 @@ const MessageText = styled(Typography)(() => ({
   fontSize: '14px',
   fontWeight: 500,
   lineHeight: '21px',
-  color: '#000000',
+  color: '#FFFFFF',
   wordBreak: 'break-word',
   whiteSpace: 'pre-wrap',
 }));
@@ -71,7 +70,10 @@ const MessageText = styled(Typography)(() => ({
  * アイコン付きで吹き出しデザインになっています。
  * 
  * 仕様:
- * - 背景色: 指定可能（デフォルト: #F0F0F0）
+ * - メインカラーから背景色とアイコン背景色を動的に生成
+ * - チャット背景: mix(白, メイン, 0.75)
+ * - アイコン背景: 彩度 +5%, 明度 +20%（薄く調整）
+ * - テキスト色: 白
  * - 幅: 228px
  * - 高さ: コンテンツに応じて自動調整
  * - border-radius: 32px
@@ -83,17 +85,23 @@ const MessageText = styled(Typography)(() => ({
  */
 export const CompanyMessage: React.FC<CompanyMessageProps> = ({
   message,
-  backgroundColor = '#F0F0F0',
-  iconBackgroundColor = '#C3E5E3',
+  color = '#C3E5E3',
   className = '',
 }) => {
+  
+  // メインカラーからアイコン背景色を生成（彩度+5%, 明度+20%でより薄く）
+  const iconBackgroundColor = chroma(color)
+    .saturate(0.9)  // 彩度を5%上げる（薄く）
+    .brighten(0.9)   // 明度を20%上げる（より明るく）
+    .hex();
+
   return (
     <MessageContainer className={className}>
       <RobotIcon 
         size={32} 
         backgroundColor={iconBackgroundColor}
       />
-      <MessageBubble bgColor={backgroundColor}>
+      <MessageBubble bgColor={color}>
         <MessageText>
           {message}
         </MessageText>
