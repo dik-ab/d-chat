@@ -6,7 +6,7 @@ import { RobotIcon } from '../robot';
 
 interface ChatIconProps {
   /** クローズボタンのクリックハンドラー */
-  onClose?: () => void;
+  onClose?: (e?: React.MouseEvent) => void;
   /** クラス名 */
   className?: string;
 }
@@ -22,7 +22,6 @@ const ChatContainer = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   position: 'relative',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
 }));
 
 const CloseButton = styled(IconButton)(({ theme }) => ({

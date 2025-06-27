@@ -21,7 +21,7 @@ const MessageContainer = styled(Box)(() => ({
   marginBottom: '8px',
   maxWidth: '100%',
   paddingLeft: '50px', // アイコン分のスペースを確保
-  '& > :first-child': {
+  '& > :first-of-type': {
     position: 'absolute',
     top: '0px', // アイコンを上から0pxの位置に固定
     left: '0px', // アイコンを左端に固定
@@ -29,7 +29,9 @@ const MessageContainer = styled(Box)(() => ({
   },
 }));
 
-const MessageBubble = styled(Box)<{ bgColor: string }>(({ bgColor }) => ({
+const MessageBubble = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'bgColor',
+})<{ bgColor: string }>(({ bgColor }) => ({
   position: 'relative',
   width: '228px',
   backgroundColor: bgColor,

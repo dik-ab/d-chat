@@ -39,7 +39,9 @@ const generateDerivedColors = (primaryColor: string) => {
   };
 };
 
-const StyledChatBackground = styled(Box)<{
+const StyledChatBackground = styled(Box, {
+  shouldForwardProp: (prop) => !['primaryColor', 'bgWidth', 'bgHeight'].includes(prop as string),
+})<{
   primaryColor: string;
   bgWidth: number;
   bgHeight: number;

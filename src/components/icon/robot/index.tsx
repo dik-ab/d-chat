@@ -38,7 +38,9 @@ const generateGradientEndColor = (startColor: string): string => {
   return `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
 };
 
-const StyledAvatar = styled(Avatar)<{ size: number; startColor: string; endColor: string }>(
+const StyledAvatar = styled(Avatar, {
+  shouldForwardProp: (prop) => !['size', 'startColor', 'endColor'].includes(prop as string),
+})<{ size: number; startColor: string; endColor: string }>(
   ({ size, startColor, endColor }) => ({
     width: size,
     height: size,
@@ -50,7 +52,9 @@ const StyledAvatar = styled(Avatar)<{ size: number; startColor: string; endColor
   })
 );
 
-const RobotImage = styled('img')<{ iconSize: number }>(({ iconSize }) => ({
+const RobotImage = styled('img', {
+  shouldForwardProp: (prop) => prop !== 'iconSize',
+})<{ iconSize: number }>(({ iconSize }) => ({
   width: iconSize,
   height: iconSize,
   objectFit: 'contain',
