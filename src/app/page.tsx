@@ -51,8 +51,10 @@ export default function Home() {
   };
 
   const handleCloseChat = () => {
-    // 実際の実装では親ウィンドウに閉じる指示を送信
-    console.log('チャットを閉じる');
+    // 親ウィンドウにチャットを閉じる指示を送信
+    if (window.parent) {
+      window.parent.postMessage({ type: 'CLOSE_CHAT' }, '*');
+    }
   };
 
   return (
