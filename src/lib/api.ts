@@ -65,6 +65,24 @@ export async function getChatSetting(
   });
 }
 
+// 030. 会話作成
+export async function createConversation(
+  identifier: string,
+  content: string,
+  accessToken: string
+): Promise<Conversation> {
+  return apiRequest<Conversation>(`/spaces/${identifier}/conversations`, {
+    method: 'POST',
+    headers: {
+      'X-Authorization': accessToken,
+    },
+    body: JSON.stringify({
+      identifier,
+      content,
+    }),
+  });
+}
+
 // 040. 会話情報取得
 export async function getConversation(
   identifier: string,
