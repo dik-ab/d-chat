@@ -2,13 +2,16 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
-import { Box } from '@mui/material';
+import { Box, CircularProgress, Alert } from '@mui/material';
+import useSWR from 'swr';
 import { theme } from '../theme/theme';
 import { Header } from '../components/header';
 import { MessageInput } from '../components/input/message';
 import { UserMessage } from '../components/message/user';
 import { CompanyMessage } from '../components/message/company';
 import { ChatBackground } from '../components/background/chat';
+import { getAccessToken, getChatSetting } from '../lib/api';
+import { AccessTokenResponse, ChatSetting } from '../types/api';
 
 interface Message {
   id: number;
@@ -17,9 +20,41 @@ interface Message {
   timestamp: Date;
 }
 
+// 定数
+const IDENTIFIER = 'abe_test';
+const FINGERPRINT = 'qwertyuiop';
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const chatAreaRef = useRef<HTMLDivElement>(null);
+  
+  // 1. アクセストークン取得
+  const { data: accessTokenData, error: tokenError, isLoading: isTokenLoading } = useSWR<AccessTokenResponse>(
+    ['access-token', IDENTIFIER, FINGERPRINT],
+    () => getAccessToken(IDENTIFIER, FINGERPRINT),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+  
+  // 2. Chat設定取得（アクセストークンが取得できた場合のみ）
+  const { data: chatSetting, error: settingError, isLoading: isSettingLoading } = useSWR<ChatSetting>(
+    accessTokenData?.token ? ['chat-setting', IDENTIFIER, accessTokenData.token] : null,
+    () => getChatSetting(IDENTIFIER, accessTokenData!.token),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+    }
+  );
+
+  console.log('tokenError', tokenError)
+  console.log('settingError', settingError)
+  
+  // ローディング状態とエラー状態の管理
+  const isLoading = isTokenLoading || isSettingLoading;
+  const error = tokenError || settingError;
+  const isReady = !!(accessTokenData?.token && chatSetting);
 
   // メッセージが追加されたら自動スクロール
   useEffect(() => {
@@ -27,6 +62,29 @@ export default function Home() {
       chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Chat設定が取得できたら初期メッセージを表示
+  useEffect(() => {
+    if (chatSetting && messages.length === 0) {
+      const welcomeMessage: Message = {
+        id: Date.now(),
+        type: 'company',
+        content: chatSetting.welcome_message,
+        timestamp: new Date()
+      };
+      setMessages([welcomeMessage]);
+    }
+  }, [chatSetting, messages.length]);
+
+  // デバッグ用：取得したデータをコンソールに出力
+  useEffect(() => {
+    if (accessTokenData?.token) {
+      console.log('Access Token:', accessTokenData.token);
+    }
+    if (chatSetting) {
+      console.log('Chat Setting:', chatSetting);
+    }
+  }, [accessTokenData?.token, chatSetting]);
 
   const handleSendMessage = (content: string) => {
     const newMessage: Message = {
@@ -57,6 +115,54 @@ export default function Home() {
     }
   };
 
+  // ローディング中の表示
+  if (isLoading) {
+    return (
+      <ThemeProvider theme={theme}>
+        <Box
+          sx={{
+            width: '374px',
+            height: '704px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: 2
+          }}
+        >
+          <CircularProgress />
+          <Box sx={{ fontSize: '14px', color: 'text.secondary' }}>
+            チャット設定を読み込み中...
+          </Box>
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
+  // エラー時の表示
+  if (error) {
+    return (
+      <ThemeProvider theme={theme}>
+        <Box
+          sx={{
+            width: '374px',
+            height: '704px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 2
+          }}
+        >
+          <Alert severity="error">
+            チャット設定の読み込みに失敗しました。
+            <br />
+            {error.message}
+          </Alert>
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -74,7 +180,7 @@ export default function Home() {
         <ChatBackground 
           width={374} 
           height={704}
-          primaryColor={theme.palette.brand.primary}
+          primaryColor={chatSetting?.header_bg_color || theme.palette.brand.primary}
         >
           {/* ヘッダー */}
           <Box
@@ -89,7 +195,7 @@ export default function Home() {
             }}
           >
             <Header
-              title="カスタマーサポート"
+              title={chatSetting?.header_label || "カスタマーサポート"}
               onClose={handleCloseChat}
             />
           </Box>
