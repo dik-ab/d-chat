@@ -3,15 +3,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { Box, CircularProgress, Alert } from '@mui/material';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
+import useSWRMutation from 'swr/mutation';
 import { theme } from '../theme/theme';
 import { Header } from '../components/header';
 import { MessageInput } from '../components/input/message';
 import { UserMessage } from '../components/message/user';
 import { CompanyMessage } from '../components/message/company';
 import { ChatBackground } from '../components/background/chat';
-import { getAccessToken, getChatSetting } from '../lib/api';
-import { AccessTokenResponse, ChatSetting } from '../types/api';
+import { getAccessToken, getChatSetting, createConversation, getConversation } from '../lib/api';
+import { AccessTokenResponse, ChatSetting, Conversation } from '../types/api';
 
 interface Message {
   id: number;
@@ -26,7 +27,9 @@ const FINGERPRINT = 'qwertyuiop';
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
+  const { mutate } = useSWRConfig();
   
   // 1. アクセストークン取得
   const { data: accessTokenData, error: tokenError, isLoading: isTokenLoading } = useSWR<AccessTokenResponse>(
@@ -48,8 +51,26 @@ export default function Home() {
     }
   );
 
-  console.log('tokenError', tokenError)
-  console.log('settingError', settingError)
+  // 3. 会話作成のMutation
+  const { trigger: createConversationTrigger, isMutating: isCreatingConversation } = useSWRMutation(
+    accessTokenData?.token ? ['create-conversation', IDENTIFIER] : null,
+    async ([, identifier], { arg }: { arg: { content: string } }) => {
+      return createConversation(identifier, arg.content, accessTokenData!.token);
+    }
+  );
+
+  // 4. 会話情報取得（ポーリング用）
+  const { data: conversationData, error: conversationError } = useSWR<Conversation>(
+    currentConversation?.token && accessTokenData?.token 
+      ? ['conversation', IDENTIFIER, currentConversation.token, accessTokenData.token] 
+      : null,
+    () => getConversation(IDENTIFIER, currentConversation!.token, accessTokenData!.token),
+    {
+      refreshInterval: currentConversation?.state === 'answer_preparing' ? 2000 : 0, // ポーリング
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+    }
+  );
   
   // ローディング状態とエラー状態の管理
   const isLoading = isTokenLoading || isSettingLoading;
@@ -76,6 +97,52 @@ export default function Home() {
     }
   }, [chatSetting, messages.length]);
 
+  // 会話データが更新されたら現在の会話を更新
+  useEffect(() => {
+    if (conversationData) {
+      setCurrentConversation(conversationData);
+    }
+  }, [conversationData]);
+
+  // 会話データからメッセージを生成してUIに反映
+  useEffect(() => {
+    if (currentConversation && currentConversation.questions.length > 0) {
+      const conversationMessages: Message[] = [];
+      
+      currentConversation.questions.forEach((question) => {
+        // ユーザーの質問を追加
+        conversationMessages.push({
+          id: question.id,
+          type: 'user',
+          content: question.content,
+          timestamp: new Date()
+        });
+        
+        // 回答がある場合は追加
+        if (question.answer) {
+          conversationMessages.push({
+            id: question.answer.id,
+            type: 'company',
+            content: question.answer.content,
+            timestamp: new Date()
+          });
+        }
+      });
+      
+      // 既存のメッセージから会話に関連しないメッセージ（ウェルカムメッセージなど）を保持
+      const nonConversationMessages = messages.filter(msg => 
+        msg.type === 'company' && msg.content === chatSetting?.welcome_message
+      );
+      
+      // 新しい回答がある場合のみメッセージを更新
+      const hasNewAnswer = currentConversation.questions.some(q => q.answer);
+      if (hasNewAnswer) {
+        const finalMessages = [...nonConversationMessages, ...conversationMessages];
+        setMessages(finalMessages);
+      }
+    }
+  }, [currentConversation, chatSetting?.welcome_message]);
+
   // デバッグ用：取得したデータをコンソールに出力
   useEffect(() => {
     if (accessTokenData?.token) {
@@ -86,26 +153,43 @@ export default function Home() {
     }
   }, [accessTokenData?.token, chatSetting]);
 
-  const handleSendMessage = (content: string) => {
-    const newMessage: Message = {
+  const handleSendMessage = async (content: string) => {
+    if (!accessTokenData?.token || isCreatingConversation) {
+      return;
+    }
+
+    // 即座にユーザーメッセージを表示
+    const userMessage: Message = {
       id: Date.now(),
       type: 'user',
       content,
       timestamp: new Date()
     };
     
-    setMessages(prev => [...prev, newMessage]);
-    
-    // 簡単な自動返信（デモ用）
-    setTimeout(() => {
-      const autoReply: Message = {
-        id: Date.now() + Math.random(), // より確実なユニークID
-        type: 'company',
-        content: 'ありがとうございます。担当者が確認いたします。少々お待ちください。',
-        timestamp: new Date()
-      };
-      setMessages(current => [...current, autoReply]);
-    }, 1000);
+    setMessages(prev => [...prev, userMessage]);
+
+    try {
+      // 会話を作成
+      const conversation = await createConversationTrigger({ content });
+      console.log('Created conversation:', conversation);
+      
+      // 作成された会話を現在の会話として設定
+      setCurrentConversation(conversation);
+      
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+      
+      // エラーメッセージを表示
+      setTimeout(() => {
+        const errorMessage: Message = {
+          id: Date.now() + Math.random(),
+          type: 'company',
+          content: '申し訳ございません。一時的にサービスがご利用いただけません。しばらく経ってから再度お試しください。',
+          timestamp: new Date()
+        };
+        setMessages(current => [...current, errorMessage]);
+      }, 500);
+    }
   };
 
   const handleCloseChat = () => {
@@ -260,7 +344,29 @@ export default function Home() {
               placeholder="メッセージを入力してください..."
               onSend={handleSendMessage}
               isMicMode={false}
+              disabled={isCreatingConversation}
             />
+            {isCreatingConversation && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  fontSize: '12px',
+                  color: 'text.secondary'
+                }}
+              >
+                <CircularProgress size={16} />
+                送信中...
+              </Box>
+            )}
           </Box>
         </ChatBackground>
       </Box>
