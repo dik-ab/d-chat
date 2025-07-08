@@ -47,6 +47,13 @@ export interface Conversation {
   contact_page_url: string | null;
 }
 
+// 返信リクエストの型
+export interface ReplyRequest {
+  token: string;
+  identifier: string;
+  content: string;
+}
+
 // API エラーの型
 export interface ApiError {
   message: string;

@@ -1,4 +1,4 @@
-import { AccessTokenRequest, AccessTokenResponse, ChatSetting, Conversation, ApiError } from '../types/api';
+import { AccessTokenRequest, AccessTokenResponse, ChatSetting, Conversation, ReplyRequest, ApiError } from '../types/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -94,5 +94,25 @@ export async function getConversation(
     headers: {
       'X-Authorization': accessToken,
     },
+  });
+}
+
+// 050. 返信
+export async function replyToConversation(
+  identifier: string,
+  token: string,
+  content: string,
+  accessToken: string
+): Promise<Conversation> {
+  return apiRequest<Conversation>(`/spaces/${identifier}/conversations/${token}/reply`, {
+    method: 'POST',
+    headers: {
+      'X-Authorization': accessToken,
+    },
+    body: JSON.stringify({
+      token,
+      identifier,
+      content,
+    }),
   });
 }
