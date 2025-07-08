@@ -159,6 +159,33 @@ export default function Home() {
                 setMessages(prev => [...prev, ...ragMessages]);
               }, 500);
               
+            } else if (currentConversation.state === 'top1' && question.rag_results && question.rag_results.length >= 1) {
+              console.log('Processing top1 state with RAG results:', question.rag_results);
+              
+              // 1つ目: 通常の回答メッセージ
+              const firstMessage: Message = {
+                id: Date.now() + Math.random(),
+                type: 'company',
+                content: question.answer.content,
+                timestamp: new Date()
+              };
+              
+              // 2つ目: RAG結果から1つの回答
+              const ragMessage: Message = {
+                id: Date.now() + Math.random() + 1,
+                type: 'company',
+                content: question.rag_results[0].answer,
+                timestamp: new Date()
+              };
+              
+              // 1つ目のメッセージを追加
+              setMessages(prev => [...prev, firstMessage]);
+              
+              // 少し遅延させて2つ目のメッセージを追加
+              setTimeout(() => {
+                setMessages(prev => [...prev, ragMessage]);
+              }, 500);
+              
             } else {
               // 通常の処理
               const answerMessage: Message = {
