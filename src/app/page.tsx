@@ -11,7 +11,7 @@ import { MessageInput } from '../components/input/message';
 import { UserMessage } from '../components/message/user';
 import { CompanyMessage } from '../components/message/company';
 import { ChatBackground } from '../components/background/chat';
-import { getAccessToken, getChatSetting, createConversation, getConversation } from '../lib/api';
+import { getAccessToken, getChatSetting, createConversation, getConversation, replyToConversation } from '../lib/api';
 import { AccessTokenResponse, ChatSetting, Conversation } from '../types/api';
 
 interface Message {
@@ -22,12 +22,13 @@ interface Message {
 }
 
 // 定数
-const IDENTIFIER = 'abe_test';
+const IDENTIFIER = 'livepass_test_chatui';
 const FINGERPRINT = 'qwertyuiop';
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+  const [processedQuestionIds, setProcessedQuestionIds] = useState<Set<number>>(new Set());
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const { mutate } = useSWRConfig();
   
@@ -59,14 +60,32 @@ export default function Home() {
     }
   );
 
-  // 4. 会話情報取得（ポーリング用）
+  // 4. 会話情報取得のMutation（明示的実行用）
+  const { trigger: fetchConversationTrigger, isMutating: isFetchingConversation } = useSWRMutation(
+    accessTokenData?.token ? ['fetch-conversation', IDENTIFIER] : null,
+    async ([, identifier], { arg }: { arg: { token: string } }) => {
+      return getConversation(identifier, arg.token, accessTokenData!.token);
+    }
+  );
+
+  // 5. 返信のMutation
+  const { trigger: replyToConversationTrigger, isMutating: isReplying } = useSWRMutation(
+    accessTokenData?.token ? ['reply-conversation', IDENTIFIER] : null,
+    async ([, identifier], { arg }: { arg: { token: string; content: string } }) => {
+      return replyToConversation(identifier, arg.token, arg.content, accessTokenData!.token);
+    }
+  );
+
+  console.log('currentConversation', currentConversation)
+  // 6. 会話情報取得（ポーリング用）
   const { data: conversationData, error: conversationError } = useSWR<Conversation>(
-    currentConversation?.token && accessTokenData?.token 
+    currentConversation?.token && accessTokenData?.token && 
+    (currentConversation?.state === 'answer_preparing' || currentConversation?.state === 'initial' || currentConversation?.state === 'reply_received')
       ? ['conversation', IDENTIFIER, currentConversation.token, accessTokenData.token] 
       : null,
     () => getConversation(IDENTIFIER, currentConversation!.token, accessTokenData!.token),
     {
-      refreshInterval: currentConversation?.state === 'answer_preparing' ? 2000 : 0, // ポーリング
+      refreshInterval: 2000, // 2秒間隔でポーリング
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
     }
@@ -104,44 +123,30 @@ export default function Home() {
     }
   }, [conversationData]);
 
-  // 会話データからメッセージを生成してUIに反映
+  // 会話データから新しいメッセージのみを追加（既存メッセージを保持）
   useEffect(() => {
     if (currentConversation && currentConversation.questions.length > 0) {
-      const conversationMessages: Message[] = [];
-      
       currentConversation.questions.forEach((question) => {
-        // ユーザーの質問を追加
-        conversationMessages.push({
-          id: question.id,
-          type: 'user',
-          content: question.content,
-          timestamp: new Date()
-        });
-        
-        // 回答がある場合は追加
-        if (question.answer) {
-          conversationMessages.push({
-            id: question.answer.id,
-            type: 'company',
-            content: question.answer.content,
-            timestamp: new Date()
-          });
+        // まだ処理していない質問の場合のみ処理
+        if (!processedQuestionIds.has(question.id)) {
+          // 回答がある場合のみメッセージを追加
+          if (question.answer) {
+            const answerMessage: Message = {
+              id: Date.now() + Math.random(), // 一意のIDを生成
+              type: 'company',
+              content: question.answer.content,
+              timestamp: new Date()
+            };
+            
+            setMessages(prev => [...prev, answerMessage]);
+            
+            // 処理済みとしてマーク
+            setProcessedQuestionIds(prev => new Set([...prev, question.id]));
+          }
         }
       });
-      
-      // 既存のメッセージから会話に関連しないメッセージ（ウェルカムメッセージなど）を保持
-      const nonConversationMessages = messages.filter(msg => 
-        msg.type === 'company' && msg.content === chatSetting?.welcome_message
-      );
-      
-      // 新しい回答がある場合のみメッセージを更新
-      const hasNewAnswer = currentConversation.questions.some(q => q.answer);
-      if (hasNewAnswer) {
-        const finalMessages = [...nonConversationMessages, ...conversationMessages];
-        setMessages(finalMessages);
-      }
     }
-  }, [currentConversation, chatSetting?.welcome_message]);
+  }, [currentConversation, processedQuestionIds]);
 
   // デバッグ用：取得したデータをコンソールに出力
   useEffect(() => {
@@ -153,8 +158,33 @@ export default function Home() {
     }
   }, [accessTokenData?.token, chatSetting]);
 
+  // デバッグ用：現在の会話状態とポーリング条件を監視
+  useEffect(() => {
+    if (currentConversation) {
+      console.log('Current conversation updated:', {
+        token: currentConversation.token,
+        state: currentConversation.state,
+        questionsCount: currentConversation.questions.length,
+        hasAnswers: currentConversation.questions.some(q => q.answer),
+        shouldPoll: currentConversation.state === 'answer_preparing' || currentConversation.state === 'initial'
+      });
+    }
+  }, [currentConversation]);
+
+  // デバッグ用：ポーリングデータの更新を監視
+  useEffect(() => {
+    if (conversationData) {
+      console.log('Polling data updated:', {
+        token: conversationData.token,
+        state: conversationData.state,
+        questionsCount: conversationData.questions.length,
+        hasAnswers: conversationData.questions.some(q => q.answer)
+      });
+    }
+  }, [conversationData]);
+
   const handleSendMessage = async (content: string) => {
-    if (!accessTokenData?.token || isCreatingConversation) {
+    if (!accessTokenData?.token || isCreatingConversation || isReplying) {
       return;
     }
 
@@ -169,15 +199,61 @@ export default function Home() {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      // 会話を作成
-      const conversation = await createConversationTrigger({ content });
-      console.log('Created conversation:', conversation);
+      let conversation: Conversation;
+
+      // 現在の会話の状態に応じて適切なAPIを呼び出し
+      if (!currentConversation) {
+        // 初回メッセージ：会話作成
+        console.log('Creating new conversation with content:', content);
+        conversation = await createConversationTrigger({ content });
+        console.log('Created conversation:', conversation);
+      } else if (currentConversation.state === 'reply_waiting') {
+        // 返信待ち状態：返信API呼び出し
+        console.log('Replying to conversation:', currentConversation.token, 'with content:', content);
+        conversation = await replyToConversationTrigger({ 
+          token: currentConversation.token, 
+          content 
+        });
+        console.log('conversation', conversation)
+        console.log('Reply sent, updated conversation:', conversation);
+      } else {
+        // その他の状態では新しい会話を作成（フォールバック）
+        console.log('Current conversation state is:', currentConversation.state, 'Creating new conversation');
+        conversation = await createConversationTrigger({ content });
+        console.log('Created new conversation:', conversation);
+      }
       
-      // 作成された会話を現在の会話として設定
+      // 作成/更新された会話を現在の会話として設定
       setCurrentConversation(conversation);
       
+      // 会話作成/返信直後に明示的に会話情報を取得してステータスを確認
+      setTimeout(async () => {
+        try {
+          const updatedConversation = await fetchConversationTrigger({ token: conversation.token });
+          console.log('Fetched conversation after API call:', updatedConversation);
+          
+          // ステータスに応じて処理を分岐
+          if (updatedConversation.state === 'answer_preparing' || updatedConversation.state === 'initial') {
+            console.log('Starting polling for conversation:', updatedConversation.token);
+            // ポーリング開始（useSWRが自動的に開始される）
+            setCurrentConversation(updatedConversation);
+          } else if (updatedConversation.state === 'reply_waiting' || updatedConversation.questions.some(q => q.answer)) {
+            console.log('Answer ready or reply waiting, updating UI:', updatedConversation);
+            // 即座に回答が準備されている場合やreply_waiting状態の場合はUIを更新
+            setCurrentConversation(updatedConversation);
+          } else {
+            console.log('Conversation state:', updatedConversation.state, 'updating UI');
+            setCurrentConversation(updatedConversation);
+          }
+        } catch (fetchError) {
+          console.error('Failed to fetch conversation after API call:', fetchError);
+          // フェッチに失敗した場合は取得した会話データを使用
+          setCurrentConversation(conversation);
+        }
+      }, 500); // 500ms後に実行
+      
     } catch (error) {
-      console.error('Failed to create conversation:', error);
+      console.error('Failed to send message:', error);
       
       // エラーメッセージを表示
       setTimeout(() => {
@@ -344,9 +420,9 @@ export default function Home() {
               placeholder="メッセージを入力してください..."
               onSend={handleSendMessage}
               isMicMode={false}
-              disabled={isCreatingConversation}
+              disabled={isCreatingConversation || isReplying}
             />
-            {isCreatingConversation && (
+            {(isCreatingConversation || isReplying) && (
               <Box
                 sx={{
                   position: 'absolute',
@@ -364,7 +440,7 @@ export default function Home() {
                 }}
               >
                 <CircularProgress size={16} />
-                送信中...
+                {isCreatingConversation ? '送信中...' : '返信中...'}
               </Box>
             )}
           </Box>
