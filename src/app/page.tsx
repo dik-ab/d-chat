@@ -131,14 +131,45 @@ export default function Home() {
         if (!processedQuestionIds.has(question.id)) {
           // 回答がある場合のみメッセージを追加
           if (question.answer) {
-            const answerMessage: Message = {
-              id: Date.now() + Math.random(), // 一意のIDを生成
-              type: 'company',
-              content: question.answer.content,
-              timestamp: new Date()
-            };
-            
-            setMessages(prev => [...prev, answerMessage]);
+            // top3状態の場合の特別処理
+            if (currentConversation.state === 'top3' && question.answer.answer_type === 'top3_match' && question.rag_results && question.rag_results.length >= 3) {
+              console.log('Processing top3 state with RAG results:', question.rag_results);
+              
+              // 1つ目: 通常の回答メッセージ
+              const firstMessage: Message = {
+                id: Date.now() + Math.random(),
+                type: 'company',
+                content: question.answer.content,
+                timestamp: new Date()
+              };
+              
+              // 2つ目と3つ目: RAG結果から上位3つの回答
+              const ragMessages: Message[] = question.rag_results.slice(0, 3).map((ragResult, index) => ({
+                id: Date.now() + Math.random() + index + 1,
+                type: 'company' as const,
+                content: ragResult.answer,
+                timestamp: new Date()
+              }));
+              
+              // 1つ目のメッセージを追加
+              setMessages(prev => [...prev, firstMessage]);
+              
+              // 少し遅延させて2つ目と3つ目のメッセージを追加
+              setTimeout(() => {
+                setMessages(prev => [...prev, ...ragMessages]);
+              }, 500);
+              
+            } else {
+              // 通常の処理
+              const answerMessage: Message = {
+                id: Date.now() + Math.random(),
+                type: 'company',
+                content: question.answer.content,
+                timestamp: new Date()
+              };
+              
+              setMessages(prev => [...prev, answerMessage]);
+            }
             
             // 処理済みとしてマーク
             setProcessedQuestionIds(prev => new Set([...prev, question.id]));
