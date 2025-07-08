@@ -10,6 +10,7 @@ import { Header } from '../components/header';
 import { MessageInput } from '../components/input/message';
 import { UserMessage } from '../components/message/user';
 import { CompanyMessage } from '../components/message/company';
+import { LoadingMessage } from '../components/message/loading';
 import { ChatBackground } from '../components/background/chat';
 import { getAccessToken, getChatSetting, createConversation, getConversation, replyToConversation } from '../lib/api';
 import { AccessTokenResponse, ChatSetting, Conversation } from '../types/api';
@@ -29,6 +30,8 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [processedQuestionIds, setProcessedQuestionIds] = useState<Set<number>>(new Set());
+  const [showLoadingMessage, setShowLoadingMessage] = useState(false);
+  const [loadingMessageId, setLoadingMessageId] = useState<number | null>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const { mutate } = useSWRConfig();
   
@@ -131,6 +134,12 @@ export default function Home() {
         if (!processedQuestionIds.has(question.id)) {
           // 回答がある場合のみメッセージを追加
           if (question.answer) {
+            // ローディングメッセージを削除
+            if (showLoadingMessage && loadingMessageId) {
+              setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
+              setShowLoadingMessage(false);
+              setLoadingMessageId(null);
+            }
             // top3状態の場合の特別処理
             if (currentConversation.state === 'top3' && question.answer.answer_type === 'top3_match' && question.rag_results && question.rag_results.length >= 3) {
               console.log('Processing top3 state with RAG results:', question.rag_results);
@@ -256,6 +265,19 @@ export default function Home() {
     
     setMessages(prev => [...prev, userMessage]);
 
+    // ローディングメッセージを表示
+    const loadingId = Date.now() + 1;
+    const loadingMessage: Message = {
+      id: loadingId,
+      type: 'company',
+      content: '', // LoadingMessageコンポーネントで表示するため空文字
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, loadingMessage]);
+    setShowLoadingMessage(true);
+    setLoadingMessageId(loadingId);
+
     try {
       let conversation: Conversation;
 
@@ -312,6 +334,13 @@ export default function Home() {
       
     } catch (error) {
       console.error('Failed to send message:', error);
+      
+      // ローディングメッセージを削除
+      if (showLoadingMessage && loadingMessageId) {
+        setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
+        setShowLoadingMessage(false);
+        setLoadingMessageId(null);
+      }
       
       // エラーメッセージを表示
       setTimeout(() => {
@@ -450,6 +479,10 @@ export default function Home() {
               <Box key={message.id} sx={{ width: '100%', padding: '4px 8px' }}>
                 {message.type === 'user' ? (
                   <UserMessage message={message.content} />
+                ) : message.id === loadingMessageId && showLoadingMessage ? (
+                  <LoadingMessage 
+                    color={theme.palette.brand.primary}
+                  />
                 ) : (
                   <CompanyMessage 
                     message={message.content}
