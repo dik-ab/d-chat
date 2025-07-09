@@ -3,6 +3,7 @@ import { styled } from '@mui/material/styles';
 import { Box, Typography, Link } from '@mui/material';
 import chroma from 'chroma-js';
 import { RobotIcon } from '../../icon/robot';
+import { RatingButtons } from '../../button/rating';
 
 interface CompanyMessageProps {
   /** メッセージテキスト */
@@ -11,6 +12,14 @@ interface CompanyMessageProps {
   color?: string;
   /** クラス名 */
   className?: string;
+  /** 評価ボタンの設定 */
+  ratingData?: {
+    matchedMessage: string;
+    unmatchedMessage: string;
+    conversationState: 'top1' | 'top3' | 'unmatched';
+    contactPageUrl?: string | null;
+    onRating: (ratingType: 'good' | 'bad' | 'none') => void;
+  };
 }
 
 const MessageContainer = styled(Box)(() => ({
@@ -151,6 +160,7 @@ export const CompanyMessage: React.FC<CompanyMessageProps> = ({
   message,
   color = '#00A79E',
   className = '',
+  ratingData,
 }) => {
   
   // メインカラーからアイコン背景色を生成（彩度+5%, 明度+20%でより薄く）
@@ -166,9 +176,21 @@ export const CompanyMessage: React.FC<CompanyMessageProps> = ({
         backgroundColor={iconBackgroundColor}
       />
       <MessageBubble bgColor={color}>
-        <MessageText>
-          {parseMessageWithLinks(message)}
-        </MessageText>
+        {/* 通常のメッセージまたは評価メッセージ */}
+        {ratingData ? (
+          <RatingButtons
+            matchedMessage={ratingData.matchedMessage}
+            unmatchedMessage={ratingData.unmatchedMessage}
+            conversationState={ratingData.conversationState}
+            contactPageUrl={ratingData.contactPageUrl}
+            onRating={ratingData.onRating}
+            color={color}
+          />
+        ) : (
+          <MessageText>
+            {parseMessageWithLinks(message)}
+          </MessageText>
+        )}
       </MessageBubble>
     </MessageContainer>
   );
