@@ -49,24 +49,16 @@ export const SurveyButton: React.FC<SurveyButtonProps> = ({
   onClick,
   className = '',
 }) => {
-  const iconSrc = type === 'yes' ? '/yes-face.svg' : '/no-face.svg';
-  const text = type === 'yes' ? 'はい' : 'いいえ';
+  const iconSrc = type === 'yes' ? '/yes.svg' : '/no.svg';
 
   return (
-    <StyledSurveyButton
-      onClick={onClick}
-      className={className}
-      variant="contained"
-      disableRipple
-    >
       <Image
+        onClick={onClick}
         src={iconSrc}
         alt={`${type} face`}
-        width={24}
-        height={24}
+        width={224}
+        height={51}
       />
-      <span>{text}</span>
-    </StyledSurveyButton>
   );
 };
 
