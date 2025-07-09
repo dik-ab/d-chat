@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { Box, CircularProgress, Alert } from '@mui/material';
-import useSWR, { useSWRConfig } from 'swr';
+import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { theme } from '../theme/theme';
 import { Header } from '../components/header';
@@ -11,7 +11,6 @@ import { MessageInput } from '../components/input/message';
 import { UserMessage } from '../components/message/user';
 import { CompanyMessage } from '../components/message/company';
 import { LoadingMessage } from '../components/message/loading';
-import { RatingMessage } from '../components/message/rating';
 import { ChatBackground } from '../components/background/chat';
 import { getAccessToken, getChatSetting, createConversation, getConversation, replyToConversation, rateConversation } from '../lib/api';
 import { AccessTokenResponse, ChatSetting, Conversation } from '../types/api';
@@ -41,9 +40,7 @@ export default function Home() {
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
   const [loadingMessageId, setLoadingMessageId] = useState<number | null>(null);
   const [showRatingMessage, setShowRatingMessage] = useState(false);
-  const [ratingMessageId, setRatingMessageId] = useState<number | null>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
-  const { mutate } = useSWRConfig();
   
   // 1. アクセストークン取得
   const { data: accessTokenData, error: tokenError, isLoading: isTokenLoading } = useSWR<AccessTokenResponse>(
@@ -74,7 +71,7 @@ export default function Home() {
   );
 
   // 4. 会話情報取得のMutation（明示的実行用）
-  const { trigger: fetchConversationTrigger, isMutating: isFetchingConversation } = useSWRMutation(
+  const { trigger: fetchConversationTrigger } = useSWRMutation(
     accessTokenData?.token ? ['fetch-conversation', IDENTIFIER] : null,
     async ([, identifier], { arg }: { arg: { token: string } }) => {
       return getConversation(identifier, arg.token, accessTokenData!.token);
@@ -90,7 +87,7 @@ export default function Home() {
   );
   
   // 6. 会話情報取得（ポーリング用）
-  const { data: conversationData, error: conversationError } = useSWR<Conversation>(
+  const { data: conversationData } = useSWR<Conversation>(
     currentConversation?.token && accessTokenData?.token && 
     (currentConversation?.state === 'answer_preparing' || currentConversation?.state === 'initial' || currentConversation?.state === 'reply_received')
       ? ['conversation', IDENTIFIER, currentConversation.token, accessTokenData.token] 
@@ -106,7 +103,6 @@ export default function Home() {
   // ローディング状態とエラー状態の管理
   const isLoading = isTokenLoading || isSettingLoading;
   const error = tokenError || settingError;
-  const isReady = !!(accessTokenData?.token && chatSetting);
 
   // メッセージが追加されたら自動スクロール
   useEffect(() => {
@@ -217,7 +213,6 @@ export default function Home() {
                     
                     setMessages(prev => [...prev, ratingMessage]);
                     setShowRatingMessage(true);
-                    setRatingMessageId(ratingId);
                   }, 500); // 結果メッセージから0.5秒後に評価メッセージを表示
                 }, 1000); // RAGメッセージ表示から1秒後に結果メッセージを表示
               }
@@ -290,7 +285,6 @@ export default function Home() {
                       
                       setMessages(prev => [...prev, ratingMessage]);
                       setShowRatingMessage(true);
-                      setRatingMessageId(ratingId);
                     }, 500); // 結果メッセージから0.5秒後に評価メッセージを表示
                   }, 1000); // RAGメッセージ表示から1秒後に結果メッセージを表示
                 }
@@ -348,7 +342,6 @@ export default function Home() {
                     
                     setMessages(prev => [...prev, ratingMessage]);
                     setShowRatingMessage(true);
-                    setRatingMessageId(ratingId);
                   }, 500); // 結果メッセージから0.5秒後に評価メッセージを表示
                 }, 1000); // 1秒後に結果メッセージを表示
               }

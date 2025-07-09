@@ -43,20 +43,7 @@ export const RatingMessage: React.FC<RatingMessageProps> = ({
     setHasRated(true);
     onRating(ratingType);
   };
-
-  // 評価メッセージの内容を構築
-  const buildMessage = () => {
-    let message = resultMessage;
-    
-    if (contactPageUrl) {
-      message += '\n\n';
-    }
-    
-    message += '\n\nお問合せいただきありがとうございました。品質向上のため、よろしければ以下のボタンから評価をお願いいたします。';
-    
-    return message;
-  };
-
+  
   return (
     <Box
       sx={{

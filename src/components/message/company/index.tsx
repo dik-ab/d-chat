@@ -184,7 +184,6 @@ export const CompanyMessage: React.FC<CompanyMessageProps> = ({
             conversationState={ratingData.conversationState}
             contactPageUrl={ratingData.contactPageUrl}
             onRating={ratingData.onRating}
-            color={color}
           />
         ) : (
           <MessageText>

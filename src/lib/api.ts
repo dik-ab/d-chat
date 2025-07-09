@@ -1,4 +1,4 @@
-import { AccessTokenRequest, AccessTokenResponse, ChatSetting, Conversation, ReplyRequest, ApiError } from '../types/api';
+import { AccessTokenResponse, ChatSetting, Conversation } from '../types/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 

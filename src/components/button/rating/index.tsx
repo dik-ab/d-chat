@@ -13,8 +13,6 @@ interface RatingButtonsProps {
   contactPageUrl?: string | null;
   /** 評価ボタンクリック時のハンドラー */
   onRating: (ratingType: 'good' | 'bad' | 'none') => void;
-  /** 色 */
-  color?: string;
 }
 
 /**
@@ -28,7 +26,6 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
   conversationState,
   contactPageUrl,
   onRating,
-  color = '#1976d2',
 }) => {
   const [hasRated, setHasRated] = useState(false);
   const hasCalledNoneRef = useRef(false);
