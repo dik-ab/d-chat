@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import useSWR from 'swr';
@@ -13,6 +13,7 @@ import { CompanyMessage } from '../components/message/company';
 import { LoadingMessage } from '../components/message/loading';
 import { ChatBackground } from '../components/background/chat';
 import { getAccessToken, getChatSetting, createConversation, getConversation, replyToConversation, rateConversation } from '../lib/api';
+import { getOrCreateFingerprint } from '../lib/fingerprint';
 import { AccessTokenResponse, ChatSetting, Conversation } from '../types/api';
 
 interface Message {
@@ -31,7 +32,6 @@ interface Message {
 
 // 定数
 const IDENTIFIER = 'livepass_test_chatui';
-const FINGERPRINT = 'qwertyuiop';
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -42,10 +42,27 @@ export default function Home() {
   const [showRatingMessage, setShowRatingMessage] = useState(false);
   const chatAreaRef = useRef<HTMLDivElement>(null);
   
+  // デバイスフィンガープリント生成（同期的）
+  const deviceFingerprint = useMemo(() => {
+    // ブラウザ環境でのみ実行
+    if (typeof window === 'undefined') {
+      return 'server_fallback';
+    }
+    
+    try {
+      const fingerprint = getOrCreateFingerprint();
+      console.log('Generated device fingerprint:', fingerprint);
+      return fingerprint;
+    } catch (error) {
+      console.error('Failed to generate fingerprint:', error);
+      return 'fallback_fingerprint';
+    }
+  }, []);
+  
   // 1. アクセストークン取得
   const { data: accessTokenData, error: tokenError, isLoading: isTokenLoading } = useSWR<AccessTokenResponse>(
-    ['access-token', IDENTIFIER, FINGERPRINT],
-    () => getAccessToken(IDENTIFIER, FINGERPRINT),
+    ['access-token', IDENTIFIER, deviceFingerprint],
+    () => getAccessToken(IDENTIFIER, deviceFingerprint),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
