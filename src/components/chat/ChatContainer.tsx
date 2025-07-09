@@ -107,7 +107,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         <ChatBackground 
           width={374} 
           height={704}
-          primaryColor={chatSetting?.header_bg_color || theme.palette.brand.primary}
+          primaryColor={chatSetting?.window_bg_color || theme.palette.brand.primary}
         >
           {/* ヘッダー */}
           <Box
@@ -123,6 +123,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           >
             <Header
               title={chatSetting?.header_label || "カスタマーサポート"}
+              backgroundColor={chatSetting?.header_bg_color || '#FFFFFF'}
               onClose={onCloseChat}
             />
           </Box>
@@ -158,15 +159,20 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             {messages.map((message) => (
               <Box key={message.id} sx={{ width: '100%', padding: '4px 8px' }}>
                 {message.type === 'user' ? (
-                  <UserMessage message={message.content} />
+                  <UserMessage 
+                    message={message.content}
+                    backgroundColor={chatSetting?.user_speech_bubble_color}
+                  />
                 ) : message.id === loadingMessageId && showLoadingMessage ? (
                   <LoadingMessage 
-                    color={theme.palette.brand.primary}
+                    backgroundColor={chatSetting?.assistant_speech_bubble_color}
+                    iconUrl={chatSetting?.assistant_icon_url}
                   />
                 ) : (
                   <CompanyMessage 
                     message={message.content}
-                    color={theme.palette.brand.primary}
+                    backgroundColor={chatSetting?.assistant_speech_bubble_color}
+                    iconUrl={chatSetting?.assistant_icon_url}
                     ratingData={message.isRatingMessage && message.ratingData ? {
                       matchedMessage: message.ratingData.matchedMessage,
                       unmatchedMessage: message.ratingData.unmatchedMessage,
