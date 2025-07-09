@@ -107,7 +107,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         <ChatBackground 
           width={374} 
           height={704}
-          primaryColor={chatSetting?.window_bg_color || theme.palette.brand.primary}
+          backgroundColor={chatSetting?.window_bg_color || '#FFFFFF'}
         >
           {/* ヘッダー */}
           <Box
