@@ -5,13 +5,17 @@ import { Box, Typography } from '@mui/material';
 interface UserMessageProps {
   /** メッセージテキスト */
   message: string;
+  /** 背景色 */
+  backgroundColor?: string;
   /** クラス名 */
   className?: string;
 }
 
-const StyledUserMessage = styled(Box)(() => ({
+const StyledUserMessage = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'backgroundColor',
+})<{ backgroundColor: string }>(({ backgroundColor }) => ({
   width: '228px',
-  backgroundColor: '#D2E5DE',
+  backgroundColor: backgroundColor,
   borderRadius: '32px',
   padding: '16px',
   display: 'flex',
@@ -48,10 +52,11 @@ const MessageText = styled(Typography)(() => ({
  */
 export const UserMessage: React.FC<UserMessageProps> = ({
   message,
+  backgroundColor = '#D2E5DE',
   className = '',
 }) => {
   return (
-    <StyledUserMessage className={className}>
+    <StyledUserMessage backgroundColor={backgroundColor} className={className}>
       <MessageText>
         {message}
       </MessageText>
