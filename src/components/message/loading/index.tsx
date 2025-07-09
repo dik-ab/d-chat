@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { CompanyMessage } from '../company';
 
 interface LoadingMessageProps {
-  color?: string;
+  backgroundColor?: string;
+  iconUrl?: string;
 }
 
 export const LoadingMessage: React.FC<LoadingMessageProps> = ({ 
-  color = '#1976d2'
+  backgroundColor = '#1976d2',
+  iconUrl = '/robot.svg'
 }) => {
   const [dotCount, setDotCount] = useState(1);
 
@@ -25,7 +27,8 @@ export const LoadingMessage: React.FC<LoadingMessageProps> = ({
   return (
     <CompanyMessage 
       message={dots}
-      color={color}
+      backgroundColor={backgroundColor}
+      iconUrl={iconUrl}
     />
   );
 };
