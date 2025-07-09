@@ -1,8 +1,9 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Link } from '@mui/material';
 import chroma from 'chroma-js';
 import { RobotIcon } from '../../icon/robot';
+import { RatingButtons } from '../../button/rating';
 
 interface CompanyMessageProps {
   /** メッセージテキスト */
@@ -11,6 +12,14 @@ interface CompanyMessageProps {
   color?: string;
   /** クラス名 */
   className?: string;
+  /** 評価ボタンの設定 */
+  ratingData?: {
+    matchedMessage: string;
+    unmatchedMessage: string;
+    conversationState: 'top1' | 'top3' | 'unmatched';
+    contactPageUrl?: string | null;
+    onRating: (ratingType: 'good' | 'bad' | 'none') => void;
+  };
 }
 
 const MessageContainer = styled(Box)(() => ({
@@ -61,7 +70,71 @@ const MessageText = styled(Typography)(() => ({
   color: '#FFFFFF',
   wordBreak: 'break-word',
   whiteSpace: 'pre-wrap',
+  '& a': {
+    color: '#FFFFFF',
+    textDecoration: 'underline',
+    '&:hover': {
+      textDecoration: 'underline',
+      opacity: 0.8,
+    },
+  },
 }));
+
+// HTMLの<a>タグを解析してReactコンポーネントに変換する関数
+const parseMessageWithLinks = (message: string): React.ReactNode => {
+  // <a>タグを含むHTMLを解析する正規表現
+  const linkRegex = /<a\s+([^>]*?)>(.*?)<\/a>/gi;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = linkRegex.exec(message)) !== null) {
+    // リンクの前のテキストを追加
+    if (match.index > lastIndex) {
+      parts.push(message.substring(lastIndex, match.index));
+    }
+
+    // href属性を抽出
+    const attributes = match[1];
+    const linkText = match[2];
+    const hrefMatch = attributes.match(/href\s*=\s*["']([^"']*?)["']/i);
+    const href = hrefMatch ? hrefMatch[1] : '#';
+
+    // target属性を抽出（デフォルトは_blank）
+    const targetMatch = attributes.match(/target\s*=\s*["']([^"']*?)["']/i);
+    const target = targetMatch ? targetMatch[1] : '_blank';
+
+    // Linkコンポーネントを作成
+    parts.push(
+      <Link
+        key={`link-${match.index}`}
+        href={href}
+        target={target}
+        rel={target === '_blank' ? 'noopener noreferrer' : undefined}
+        sx={{
+          color: 'inherit',
+          textDecoration: 'underline',
+          '&:hover': {
+            textDecoration: 'underline',
+            opacity: 0.8,
+          },
+        }}
+      >
+        {linkText}
+      </Link>
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // 残りのテキストを追加
+  if (lastIndex < message.length) {
+    parts.push(message.substring(lastIndex));
+  }
+
+  // パーツが空の場合は元のメッセージを返す
+  return parts.length > 0 ? parts : message;
+};
 
 /**
  * 企業メッセージコンポーネント
@@ -87,6 +160,7 @@ export const CompanyMessage: React.FC<CompanyMessageProps> = ({
   message,
   color = '#00A79E',
   className = '',
+  ratingData,
 }) => {
   
   // メインカラーからアイコン背景色を生成（彩度+5%, 明度+20%でより薄く）
@@ -102,9 +176,20 @@ export const CompanyMessage: React.FC<CompanyMessageProps> = ({
         backgroundColor={iconBackgroundColor}
       />
       <MessageBubble bgColor={color}>
-        <MessageText>
-          {message}
-        </MessageText>
+        {/* 通常のメッセージまたは評価メッセージ */}
+        {ratingData ? (
+          <RatingButtons
+            matchedMessage={ratingData.matchedMessage}
+            unmatchedMessage={ratingData.unmatchedMessage}
+            conversationState={ratingData.conversationState}
+            contactPageUrl={ratingData.contactPageUrl}
+            onRating={ratingData.onRating}
+          />
+        ) : (
+          <MessageText>
+            {parseMessageWithLinks(message)}
+          </MessageText>
+        )}
       </MessageBubble>
     </MessageContainer>
   );
