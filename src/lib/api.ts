@@ -116,3 +116,23 @@ export async function replyToConversation(
     }),
   });
 }
+
+// 060. 評価
+export async function rateConversation(
+  identifier: string,
+  token: string,
+  ratingTypeId: number,
+  accessToken: string
+): Promise<void> {
+  return apiRequest<void>(`/spaces/${identifier}/conversations/${token}/rating`, {
+    method: 'PUT',
+    headers: {
+      'X-Authorization': accessToken,
+    },
+    body: JSON.stringify({
+      token,
+      identifier,
+      rating_type_id: ratingTypeId,
+    }),
+  });
+}
