@@ -1,15 +1,15 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import { Box, Typography, Link } from '@mui/material';
-import chroma from 'chroma-js';
-import { RobotIcon } from '../../icon/robot';
 import { RatingButtons } from '../../button/rating';
 
 interface CompanyMessageProps {
   /** メッセージテキスト */
   message: string;
-  /** メインカラー（16進数）- このカラーから背景色とアイコン背景色を動的に生成 */
-  color?: string;
+  /** 吹き出しの背景色 */
+  backgroundColor?: string;
+  /** アシスタントアイコンのURL */
+  iconUrl?: string;
   /** クラス名 */
   className?: string;
   /** 評価ボタンの設定 */
@@ -28,13 +28,7 @@ const MessageContainer = styled(Box)(() => ({
   alignItems: 'flex-start',
   marginBottom: '8px',
   maxWidth: '100%',
-  paddingLeft: '50px', // アイコン分のスペースを確保
-  '& > :first-of-type': {
-    position: 'absolute',
-    top: '0px', // アイコンを上から0pxの位置に固定
-    left: '0px', // アイコンを左端に固定
-    zIndex: 1,
-  },
+  gap: '16px', // アイコンとメッセージの間にスペースを追加
 }));
 
 const MessageBubble = styled(Box, {
@@ -136,6 +130,13 @@ const parseMessageWithLinks = (message: string): React.ReactNode => {
   return parts.length > 0 ? parts : message;
 };
 
+const IconImage = styled('img')(() => ({
+  width: '32px',
+  height: '32px',
+  borderRadius: '50%',
+  objectFit: 'cover',
+}));
+
 /**
  * 企業メッセージコンポーネント
  * 
@@ -143,9 +144,8 @@ const parseMessageWithLinks = (message: string): React.ReactNode => {
  * アイコン付きで吹き出しデザインになっています。
  * 
  * 仕様:
- * - メインカラーから背景色とアイコン背景色を動的に生成
- * - チャット背景: mix(白, メイン, 0.75)
- * - アイコン背景: 彩度 +5%, 明度 +20%（薄く調整）
+ * - 背景色: ChatSettingから取得
+ * - アイコン: ChatSettingのURLから取得
  * - テキスト色: 白
  * - 幅: 228px
  * - 高さ: コンテンツに応じて自動調整
@@ -158,24 +158,15 @@ const parseMessageWithLinks = (message: string): React.ReactNode => {
  */
 export const CompanyMessage: React.FC<CompanyMessageProps> = ({
   message,
-  color = '#00A79E',
+  backgroundColor = '#00A79E',
+  iconUrl = '/robot.svg',
   className = '',
   ratingData,
 }) => {
-  
-  // メインカラーからアイコン背景色を生成（彩度+5%, 明度+20%でより薄く）
-  const iconBackgroundColor = chroma(color)
-    .saturate(0.9)  // 彩度を5%上げる（薄く）
-    .brighten(0.9)   // 明度を20%上げる（より明るく）
-    .hex();
-
   return (
     <MessageContainer className={className}>
-      <RobotIcon 
-        size={32} 
-        backgroundColor={iconBackgroundColor}
-      />
-      <MessageBubble bgColor={color}>
+      <IconImage src={iconUrl} alt="Assistant" />
+      <MessageBubble bgColor={backgroundColor}>
         {/* 通常のメッセージまたは評価メッセージ */}
         {ratingData ? (
           <RatingButtons
