@@ -11,15 +11,23 @@ import { MessageInput } from '../components/input/message';
 import { UserMessage } from '../components/message/user';
 import { CompanyMessage } from '../components/message/company';
 import { LoadingMessage } from '../components/message/loading';
+import { RatingMessage } from '../components/message/rating';
 import { ChatBackground } from '../components/background/chat';
-import { getAccessToken, getChatSetting, createConversation, getConversation, replyToConversation } from '../lib/api';
+import { getAccessToken, getChatSetting, createConversation, getConversation, replyToConversation, rateConversation } from '../lib/api';
 import { AccessTokenResponse, ChatSetting, Conversation } from '../types/api';
 
 interface Message {
   id: number;
-  type: 'user' | 'company';
+  type: 'user' | 'company' | 'rating';
   content: string;
   timestamp: Date;
+  isRatingMessage?: boolean;
+  ratingData?: {
+    matchedMessage: string;
+    unmatchedMessage: string;
+    conversationState: 'top1' | 'top3' | 'unmatched';
+    contactPageUrl?: string | null;
+  };
 }
 
 // 定数
@@ -32,6 +40,8 @@ export default function Home() {
   const [processedQuestionIds, setProcessedQuestionIds] = useState<Set<number>>(new Set());
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
   const [loadingMessageId, setLoadingMessageId] = useState<number | null>(null);
+  const [showRatingMessage, setShowRatingMessage] = useState(false);
+  const [ratingMessageId, setRatingMessageId] = useState<number | null>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const { mutate } = useSWRConfig();
   
@@ -78,8 +88,7 @@ export default function Home() {
       return replyToConversation(identifier, arg.token, arg.content, accessTokenData!.token);
     }
   );
-
-  console.log('currentConversation', currentConversation)
+  
   // 6. 会話情報取得（ポーリング用）
   const { data: conversationData, error: conversationError } = useSWR<Conversation>(
     currentConversation?.token && accessTokenData?.token && 
@@ -166,6 +175,52 @@ export default function Home() {
               // 少し遅延させて2つ目と3つ目のメッセージを追加
               setTimeout(() => {
                 setMessages(prev => [...prev, ...ragMessages]);
+                
+              // RAGメッセージ追加後に評価メッセージを表示
+              if (!showRatingMessage && chatSetting) {
+                setTimeout(() => {
+                  // 1つ目: 成功/失敗メッセージ + 問い合わせリンク
+                  const resultMessage = currentConversation.state === 'unmatched' 
+                    ? chatSetting.unmatched_message 
+                    : chatSetting.matched_message;
+                  
+                  let messageContent = resultMessage;
+                  if (currentConversation.contact_page_url) {
+                    messageContent += `\n\n<a href="${currentConversation.contact_page_url}" target="_blank">問い合わせページはこちら</a>`;
+                  }
+                  
+                  const resultMessageObj: Message = {
+                    id: Date.now() + Math.random() + 1000,
+                    type: 'company',
+                    content: messageContent,
+                    timestamp: new Date()
+                  };
+                  
+                  setMessages(prev => [...prev, resultMessageObj]);
+                  
+                  // 2つ目: 評価依頼メッセージ + 評価ボタン
+                  setTimeout(() => {
+                    const ratingId = Date.now() + Math.random() + 2000;
+                    const ratingMessage: Message = {
+                      id: ratingId,
+                      type: 'company',
+                      content: '', // CompanyMessageで表示するため空文字
+                      timestamp: new Date(),
+                      isRatingMessage: true,
+                      ratingData: {
+                        matchedMessage: '', // 空文字（既に表示済み）
+                        unmatchedMessage: '', // 空文字（既に表示済み）
+                        conversationState: currentConversation.state as 'top1' | 'top3' | 'unmatched',
+                        contactPageUrl: null // null（既に表示済み）
+                      }
+                    };
+                    
+                    setMessages(prev => [...prev, ratingMessage]);
+                    setShowRatingMessage(true);
+                    setRatingMessageId(ratingId);
+                  }, 500); // 結果メッセージから0.5秒後に評価メッセージを表示
+                }, 1000); // RAGメッセージ表示から1秒後に結果メッセージを表示
+              }
               }, 500);
               
             } else if (currentConversation.state === 'top1' && question.rag_results && question.rag_results.length >= 1) {
@@ -193,6 +248,52 @@ export default function Home() {
               // 少し遅延させて2つ目のメッセージを追加
               setTimeout(() => {
                 setMessages(prev => [...prev, ragMessage]);
+                
+                // RAGメッセージ追加後に評価メッセージを表示
+                if (!showRatingMessage && chatSetting) {
+                  setTimeout(() => {
+                    // 1つ目: 成功/失敗メッセージ + 問い合わせリンク
+                    const resultMessage = currentConversation.state === 'unmatched' 
+                      ? chatSetting.unmatched_message 
+                      : chatSetting.matched_message;
+                    
+                    let messageContent = resultMessage;
+                    if (currentConversation.contact_page_url) {
+                      messageContent += `\n\n<a href="${currentConversation.contact_page_url}" target="_blank">問い合わせページはこちら</a>`;
+                    }
+                    
+                    const resultMessageObj: Message = {
+                      id: Date.now() + Math.random() + 1000,
+                      type: 'company',
+                      content: messageContent,
+                      timestamp: new Date()
+                    };
+                    
+                    setMessages(prev => [...prev, resultMessageObj]);
+                    
+                    // 2つ目: 評価依頼メッセージ + 評価ボタン
+                    setTimeout(() => {
+                      const ratingId = Date.now() + Math.random() + 2000;
+                      const ratingMessage: Message = {
+                        id: ratingId,
+                        type: 'company',
+                        content: '', // CompanyMessageで表示するため空文字
+                        timestamp: new Date(),
+                        isRatingMessage: true,
+                        ratingData: {
+                          matchedMessage: '', // 空文字（既に表示済み）
+                          unmatchedMessage: '', // 空文字（既に表示済み）
+                          conversationState: currentConversation.state as 'top1' | 'top3' | 'unmatched',
+                          contactPageUrl: null // null（既に表示済み）
+                        }
+                      };
+                      
+                      setMessages(prev => [...prev, ratingMessage]);
+                      setShowRatingMessage(true);
+                      setRatingMessageId(ratingId);
+                    }, 500); // 結果メッセージから0.5秒後に評価メッセージを表示
+                  }, 1000); // RAGメッセージ表示から1秒後に結果メッセージを表示
+                }
               }, 500);
               
             } else {
@@ -205,6 +306,52 @@ export default function Home() {
               };
               
               setMessages(prev => [...prev, answerMessage]);
+              
+              // 通常の回答の場合は即座に評価メッセージを表示（unmatchedの場合）
+              if (currentConversation.state === 'unmatched' && !showRatingMessage && chatSetting) {
+                setTimeout(() => {
+                  // 1つ目: 成功/失敗メッセージ + 問い合わせリンク
+                  const resultMessage = currentConversation.state === 'unmatched' 
+                    ? chatSetting.unmatched_message 
+                    : chatSetting.matched_message;
+                  
+                  let messageContent = resultMessage;
+                  if (currentConversation.contact_page_url) {
+                    messageContent += `\n\n<a href="${currentConversation.contact_page_url}" target="_blank">問い合わせページはこちら</a>`;
+                  }
+                  
+                  const resultMessageObj: Message = {
+                    id: Date.now() + Math.random() + 1000,
+                    type: 'company',
+                    content: messageContent,
+                    timestamp: new Date()
+                  };
+                  
+                  setMessages(prev => [...prev, resultMessageObj]);
+                  
+                  // 2つ目: 評価依頼メッセージ + 評価ボタン
+                  setTimeout(() => {
+                    const ratingId = Date.now() + Math.random() + 2000;
+                    const ratingMessage: Message = {
+                      id: ratingId,
+                      type: 'company',
+                      content: '', // CompanyMessageで表示するため空文字
+                      timestamp: new Date(),
+                      isRatingMessage: true,
+                      ratingData: {
+                        matchedMessage: '', // 空文字（既に表示済み）
+                        unmatchedMessage: '', // 空文字（既に表示済み）
+                        conversationState: currentConversation.state as 'top1' | 'top3' | 'unmatched',
+                        contactPageUrl: null // null（既に表示済み）
+                      }
+                    };
+                    
+                    setMessages(prev => [...prev, ratingMessage]);
+                    setShowRatingMessage(true);
+                    setRatingMessageId(ratingId);
+                  }, 500); // 結果メッセージから0.5秒後に評価メッセージを表示
+                }, 1000); // 1秒後に結果メッセージを表示
+              }
             }
             
             // 処理済みとしてマーク
@@ -213,7 +360,7 @@ export default function Home() {
         }
       });
     }
-  }, [currentConversation, processedQuestionIds]);
+  }, [currentConversation, processedQuestionIds, showRatingMessage]);
 
   // デバッグ用：取得したデータをコンソールに出力
   useEffect(() => {
@@ -355,6 +502,42 @@ export default function Home() {
     }
   };
 
+  const handleRating = async (ratingType: 'good' | 'bad' | 'none') => {
+    if (!currentConversation?.token || !accessTokenData?.token) {
+      return;
+    }
+
+    try {
+      // 評価タイプをAPIの形式に変換
+      let ratingTypeId: number;
+      switch (ratingType) {
+        case 'good':
+          ratingTypeId = 2;
+          break;
+        case 'bad':
+          ratingTypeId = 3;
+          break;
+        case 'none':
+        default:
+          ratingTypeId = 1;
+          break;
+      }
+
+      console.log('Sending rating:', { ratingType, ratingTypeId, token: currentConversation.token });
+      
+      await rateConversation(
+        IDENTIFIER,
+        currentConversation.token,
+        ratingTypeId,
+        accessTokenData.token
+      );
+      
+      console.log('Rating sent successfully');
+    } catch (error) {
+      console.error('Failed to send rating:', error);
+    }
+  };
+
   const handleCloseChat = () => {
     // 親ウィンドウにチャットを閉じる指示を送信
     if (window.parent) {
@@ -487,6 +670,13 @@ export default function Home() {
                   <CompanyMessage 
                     message={message.content}
                     color={theme.palette.brand.primary}
+                    ratingData={message.isRatingMessage && message.ratingData ? {
+                      matchedMessage: message.ratingData.matchedMessage,
+                      unmatchedMessage: message.ratingData.unmatchedMessage,
+                      conversationState: message.ratingData.conversationState,
+                      contactPageUrl: message.ratingData.contactPageUrl,
+                      onRating: handleRating
+                    } : undefined}
                   />
                 )}
               </Box>
