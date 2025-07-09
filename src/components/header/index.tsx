@@ -8,15 +8,19 @@ interface HeaderProps {
   title?: string;
   /** 閉じるボタンのクリックハンドラー */
   onClose?: () => void;
+  /** ヘッダー背景色 */
+  backgroundColor?: string;
   /** クラス名 */
   className?: string;
 }
 
-const HeaderContainer = styled(Box)(() => ({
+const HeaderContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'backgroundColor',
+})<{ backgroundColor: string }>(({ backgroundColor }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  backgroundColor: '#FFFFFF',
+  backgroundColor: backgroundColor,
   padding: '13px 16px',
   boxSizing: 'border-box',
   width: '100%',
@@ -56,10 +60,11 @@ const CloseButton = styled(IconButton)(() => ({
 export const Header: React.FC<HeaderProps> = ({
   title = '',
   onClose,
+  backgroundColor = '#FFFFFF',
   className = '',
 }) => {
   return (
-    <HeaderContainer className={className}>
+    <HeaderContainer backgroundColor={backgroundColor} className={className}>
       <HeaderTitle>
         {title}
       </HeaderTitle>
