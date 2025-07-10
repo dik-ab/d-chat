@@ -21,7 +21,7 @@ export const useChat = () => {
   // デバイスフィンガープリント生成
   const deviceFingerprint = useMemo(() => {
     if (typeof window === 'undefined') {
-      return 'server_fallback';
+      return 'server-side';
     }
     
     try {
