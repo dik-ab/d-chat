@@ -65,19 +65,21 @@ export default function Home() {
   }, [chatState.accessTokenData?.token, chatState.chatSetting]);
 
   return (
-    <ChatContainer
-      messages={chatState.messages}
-      chatSetting={chatState.chatSetting}
-      isLoading={chatState.isLoading}
-      error={chatState.error}
-      showLoadingMessage={chatState.showLoadingMessage}
-      loadingMessageId={chatState.loadingMessageId}
-      isCreatingConversation={chatState.isCreatingConversation}
-      isReplying={chatState.isReplying}
-      chatAreaRef={chatAreaRef}
-      onSendMessage={handleSendMessage}
-      onRating={handleRating}
-      onCloseChat={handleCloseChat}
-    />
+    <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
+      <ChatContainer
+        messages={chatState.messages}
+        chatSetting={chatState.chatSetting}
+        isLoading={chatState.isLoading}
+        error={chatState.error}
+        showLoadingMessage={chatState.showLoadingMessage}
+        loadingMessageId={chatState.loadingMessageId}
+        isCreatingConversation={chatState.isCreatingConversation}
+        isReplying={chatState.isReplying}
+        chatAreaRef={chatAreaRef}
+        onSendMessage={handleSendMessage}
+        onRating={handleRating}
+        onCloseChat={handleCloseChat}
+      />
+    </div>
   );
 }
