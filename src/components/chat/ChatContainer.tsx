@@ -48,8 +48,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       <ThemeProvider theme={theme}>
         <Box
           sx={{
-            width: '374px',
-            height: '704px',
+            width: '100%',
+            height: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -72,8 +72,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       <ThemeProvider theme={theme}>
         <Box
           sx={{
-            width: '374px',
-            height: '704px',
+            width: '100%',
+            height: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -94,8 +94,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     <ThemeProvider theme={theme}>
       <Box
         sx={{
-          width: '374px',
-          height: '704px',
+          width: '100%',
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
@@ -105,8 +105,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         }}
       >
         <ChatBackground 
-          width={374} 
-          height={704}
+          width="100%" 
+          height="100%"
           backgroundColor={chatSetting?.window_bg_color || '#FFFFFF'}
         >
           {/* ヘッダー */}

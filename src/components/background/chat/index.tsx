@@ -5,10 +5,10 @@ import { Box } from '@mui/material';
 interface ChatBackgroundProps {
   /** 背景色（16進数） */
   backgroundColor?: string;
-  /** 幅（px） */
-  width?: number;
-  /** 高さ（px） */
-  height?: number;
+  /** 幅（px または '100%'） */
+  width?: number | string;
+  /** 高さ（px または '100%'） */
+  height?: number | string;
   /** 子要素 */
   children?: React.ReactNode;
   /** クラス名 */
@@ -19,8 +19,8 @@ const StyledChatBackground = styled(Box, {
   shouldForwardProp: (prop) => !['backgroundColor', 'bgWidth', 'bgHeight'].includes(prop as string),
 })<{
   backgroundColor: string;
-  bgWidth: number;
-  bgHeight: number;
+  bgWidth: number | string;
+  bgHeight: number | string;
 }>(({ backgroundColor, bgWidth, bgHeight }) => {
   return {
     width: bgWidth,
@@ -38,8 +38,8 @@ const StyledChatBackground = styled(Box, {
  */
 export const ChatBackground: React.FC<ChatBackgroundProps> = ({
   backgroundColor = '#FFFFFF',
-  width = 375,
-  height = 705,
+  width = '100%',
+  height = '100%',
   children,
   className = '',
 }) => {
