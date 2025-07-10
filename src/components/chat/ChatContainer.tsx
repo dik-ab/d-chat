@@ -205,6 +205,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               isMicMode={false}
               disabled={isCreatingConversation || isReplying}
               inline={true}
+              backgroundColor={chatSetting?.assistant_speech_bubble_color}
             />
             {(isCreatingConversation || isReplying) && (
               <Box
