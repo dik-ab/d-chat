@@ -176,7 +176,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const Container = inline ? InlineContainer : FixedBottomContainer;
-  const WrapperContainer = inline ? React.Fragment : InnerContainer;
 
   const content = (
     <form onSubmit={handleFormSubmit}>

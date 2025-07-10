@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { Message } from '../types/chat';
-import { Conversation, ChatSetting } from '../types/api';
+import { Conversation, ChatSetting, Question } from '../types/api';
 
 interface UseMessageHandlerProps {
   messages: Message[];
@@ -112,7 +112,7 @@ export const useMessageHandler = ({
 
 // Top3レスポンス処理
 const handleTop3Response = (
-  question: any,
+  question: Question,
   currentConversation: Conversation,
   chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
@@ -121,6 +121,8 @@ const handleTop3Response = (
 ) => {
   console.log('Processing top3 state with RAG results:', question.rag_results);
   
+  if (!question.answer || !question.rag_results) return;
+  
   const firstMessage: Message = {
     id: Date.now() + Math.random(),
     type: 'company',
@@ -128,7 +130,7 @@ const handleTop3Response = (
     timestamp: new Date()
   };
   
-  const ragMessages: Message[] = question.rag_results.slice(0, 3).map((ragResult: any, index: number) => ({
+  const ragMessages: Message[] = question.rag_results.slice(0, 3).map((ragResult, index: number) => ({
     id: Date.now() + Math.random() + index + 1,
     type: 'company' as const,
     content: ragResult.answer,
@@ -148,7 +150,7 @@ const handleTop3Response = (
 
 // Top1レスポンス処理
 const handleTop1Response = (
-  question: any,
+  question: Question,
   currentConversation: Conversation,
   chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
@@ -156,6 +158,8 @@ const handleTop1Response = (
   showRatingMessage: boolean
 ) => {
   console.log('Processing top1 state with RAG results:', question.rag_results);
+  
+  if (!question.answer || !question.rag_results || question.rag_results.length === 0) return;
   
   const firstMessage: Message = {
     id: Date.now() + Math.random(),
@@ -184,13 +188,15 @@ const handleTop1Response = (
 
 // 通常レスポンス処理
 const handleNormalResponse = (
-  question: any,
+  question: Question,
   currentConversation: Conversation,
   chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
   showRatingMessage: boolean
 ) => {
+  if (!question.answer) return;
+  
   const answerMessage: Message = {
     id: Date.now() + Math.random(),
     type: 'company',

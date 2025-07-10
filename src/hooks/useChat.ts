@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { getAccessToken, getChatSetting, createConversation, getConversation, replyToConversation } from '../lib/api';

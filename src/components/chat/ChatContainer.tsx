@@ -17,7 +17,7 @@ interface ChatContainerProps {
   messages: Message[];
   chatSetting: ChatSetting | undefined;
   isLoading: boolean;
-  error: any;
+  error: Error | null;
   showLoadingMessage: boolean;
   loadingMessageId: number | null;
   isCreatingConversation: boolean;
