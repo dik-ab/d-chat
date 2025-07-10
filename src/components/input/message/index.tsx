@@ -23,6 +23,8 @@ interface MessageInputProps {
   className?: string;
   /** インライン表示モード（ChatContainer内で使用する場合） */
   inline?: boolean;
+  /** 背景色 */
+  backgroundColor?: string
 }
 
 // 画面下部に固定されるコンテナ
@@ -130,6 +132,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   isMicMode = false,
   className = '',
   inline = false,
+  backgroundColor
 }) => {
   const [internalValue, setInternalValue] = useState('');
   
@@ -200,6 +203,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             </MicButton>
           ) : (
             <SendButton
+              backgroundColor={backgroundColor}
               onClick={handleSend}
               disabled={disabled || !value.trim()}
               size={44}
