@@ -195,7 +195,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               bottom: 0,
               left: 0,
               right: 0,
-              padding: '8px',
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               zIndex: 10
             }}
@@ -205,6 +204,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               onSend={onSendMessage}
               isMicMode={false}
               disabled={isCreatingConversation || isReplying}
+              inline={true}
             />
             {(isCreatingConversation || isReplying) && (
               <Box
