@@ -1,7 +1,7 @@
 'use client';
 
+import { Message } from '@/types/chat';
 import { rateConversation } from '../lib/api';
-import { Message } from '../types/chat';
 import { Conversation, AccessTokenResponse } from '../types/api';
 
 const IDENTIFIER = 'livepass_test_chatui';
@@ -70,20 +70,14 @@ export const useChatActions = ({
 
       // 現在の会話の状態に応じて適切なAPIを呼び出し
       if (!currentConversation) {
-        console.log('Creating new conversation with content:', content);
         conversation = await createConversationTrigger({ content });
-        console.log('Created conversation:', conversation);
       } else if (currentConversation.state === 'reply_waiting') {
-        console.log('Replying to conversation:', currentConversation.token, 'with content:', content);
         conversation = await replyToConversationTrigger({ 
           token: currentConversation.token, 
           content 
         });
-        console.log('Reply sent, updated conversation:', conversation);
       } else {
-        console.log('Current conversation state is:', currentConversation.state, 'Creating new conversation');
         conversation = await createConversationTrigger({ content });
-        console.log('Created new conversation:', conversation);
       }
       
       setCurrentConversation(conversation);
@@ -92,16 +86,12 @@ export const useChatActions = ({
       setTimeout(async () => {
         try {
           const updatedConversation = await fetchConversationTrigger({ token: conversation.token });
-          console.log('Fetched conversation after API call:', updatedConversation);
           
           if (updatedConversation.state === 'answer_preparing' || updatedConversation.state === 'initial') {
-            console.log('Starting polling for conversation:', updatedConversation.token);
             setCurrentConversation(updatedConversation);
           } else if (updatedConversation.state === 'reply_waiting' || updatedConversation.questions.some(q => q.answer)) {
-            console.log('Answer ready or reply waiting, updating UI:', updatedConversation);
             setCurrentConversation(updatedConversation);
           } else {
-            console.log('Conversation state:', updatedConversation.state, 'updating UI');
             setCurrentConversation(updatedConversation);
           }
         } catch (fetchError) {
@@ -153,8 +143,6 @@ export const useChatActions = ({
           ratingTypeId = 1;
           break;
       }
-
-      console.log('Sending rating:', { ratingType, ratingTypeId, token: currentConversation.token });
       
       await rateConversation(
         IDENTIFIER,
@@ -163,7 +151,6 @@ export const useChatActions = ({
         accessTokenData.token
       );
       
-      console.log('Rating sent successfully');
     } catch (error) {
       console.error('Failed to send rating:', error);
     }

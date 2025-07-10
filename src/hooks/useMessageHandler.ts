@@ -84,30 +84,6 @@ export const useMessageHandler = ({
       });
     }
   }, [currentConversation, processedQuestionIds, showRatingMessage, showLoadingMessage, loadingMessageId, chatSetting, setMessages, setProcessedQuestionIds, setShowLoadingMessage, setLoadingMessageId, setShowRatingMessage]);
-
-  // デバッグ用ログ
-  useEffect(() => {
-    if (currentConversation) {
-      console.log('Current conversation updated:', {
-        token: currentConversation.token,
-        state: currentConversation.state,
-        questionsCount: currentConversation.questions.length,
-        hasAnswers: currentConversation.questions.some(q => q.answer),
-        shouldPoll: currentConversation.state === 'answer_preparing' || currentConversation.state === 'initial'
-      });
-    }
-  }, [currentConversation]);
-
-  useEffect(() => {
-    if (conversationData) {
-      console.log('Polling data updated:', {
-        token: conversationData.token,
-        state: conversationData.state,
-        questionsCount: conversationData.questions.length,
-        hasAnswers: conversationData.questions.some(q => q.answer)
-      });
-    }
-  }, [conversationData]);
 };
 
 // Top3レスポンス処理
@@ -119,7 +95,6 @@ const handleTop3Response = (
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
   showRatingMessage: boolean
 ) => {
-  console.log('Processing top3 state with RAG results:', question.rag_results);
   
   if (!question.answer || !question.rag_results) return;
   
@@ -157,7 +132,6 @@ const handleTop1Response = (
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
   showRatingMessage: boolean
 ) => {
-  console.log('Processing top1 state with RAG results:', question.rag_results);
   
   if (!question.answer || !question.rag_results || question.rag_results.length === 0) return;
   

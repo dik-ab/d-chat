@@ -26,10 +26,8 @@ export const useChat = () => {
     
     try {
       const fingerprint = getOrCreateFingerprint();
-      console.log('Generated device fingerprint:', fingerprint);
       return fingerprint;
     } catch (error) {
-      console.error('Failed to generate fingerprint:', error);
       return 'fallback_fingerprint';
     }
   }, []);

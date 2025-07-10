@@ -54,16 +54,6 @@ export default function Home() {
     }
   }, [chatState.messages]);
 
-  // デバッグ用ログ
-  useEffect(() => {
-    if (chatState.accessTokenData?.token) {
-      console.log('Access Token:', chatState.accessTokenData.token);
-    }
-    if (chatState.chatSetting) {
-      console.log('Chat Setting:', chatState.chatSetting);
-    }
-  }, [chatState.accessTokenData?.token, chatState.chatSetting]);
-
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
       <ChatContainer
