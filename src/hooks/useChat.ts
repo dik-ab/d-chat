@@ -27,7 +27,7 @@ export const useChat = () => {
     try {
       const fingerprint = getOrCreateFingerprint();
       return fingerprint;
-    } catch (error) {
+    } catch {
       return 'fallback_fingerprint';
     }
   }, []);
