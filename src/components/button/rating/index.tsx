@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Box, Typography, Link } from '@mui/material';
 import { SurveyButton } from '../survey';
 
@@ -32,15 +32,6 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
 
   // 成功時（top1, top3）か失敗時（unmatched）かでメッセージを選択
   const resultMessage = conversationState === 'unmatched' ? unmatchedMessage : matchedMessage;
-
-  // コンポーネントがアンマウントされる時にnone評価を送信
-  useEffect(() => {
-    return () => {
-      if (!hasCalledNoneRef.current && !hasRated) {
-        onRating('none');
-      }
-    };
-  }, [hasRated, onRating]);
 
   const handleRating = (ratingType: 'good' | 'bad') => {
     if (hasRated) return;

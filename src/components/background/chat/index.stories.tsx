@@ -23,9 +23,9 @@ const meta: Meta<typeof ChatBackground> = {
     },
   },
   argTypes: {
-    primaryColor: {
+    backgroundColor: {
       control: 'color',
-      description: 'メインカラー（16進数）',
+      description: '背景色（16進数）',
     },
     width: {
       control: { type: 'number', min: 200, max: 800, step: 25 },
@@ -77,7 +77,7 @@ const DemoContent = () => (
 
 export const Default: Story = {
   args: {
-    primaryColor: '#00A79E',
+    backgroundColor: '#00A79E',
     width: 375,
     height: 705,
   },
@@ -90,7 +90,7 @@ export const Default: Story = {
 
 export const BlueTheme: Story = {
   args: {
-    primaryColor: '#007BFF',
+    backgroundColor: '#007BFF',
     width: 375,
     height: 705,
   },
@@ -103,7 +103,7 @@ export const BlueTheme: Story = {
 
 export const PurpleTheme: Story = {
   args: {
-    primaryColor: '#6F42C1',
+    backgroundColor: '#6F42C1',
     width: 375,
     height: 705,
   },
@@ -116,7 +116,7 @@ export const PurpleTheme: Story = {
 
 export const RedTheme: Story = {
   args: {
-    primaryColor: '#DC3545',
+    backgroundColor: '#DC3545',
     width: 375,
     height: 705,
   },
@@ -129,7 +129,7 @@ export const RedTheme: Story = {
 
 export const GreenTheme: Story = {
   args: {
-    primaryColor: '#28A745',
+    backgroundColor: '#28A745',
     width: 375,
     height: 705,
   },
@@ -142,7 +142,7 @@ export const GreenTheme: Story = {
 
 export const CustomSize: Story = {
   args: {
-    primaryColor: '#FF6B35',
+    backgroundColor: '#FF6B35',
     width: 600,
     height: 400,
   },
@@ -155,7 +155,7 @@ export const CustomSize: Story = {
 
 export const WithoutContent: Story = {
   args: {
-    primaryColor: '#00A79E',
+    backgroundColor: '#00A79E',
     width: 375,
     height: 705,
   },
@@ -174,11 +174,11 @@ export const ThemeComparison: Story = {
         { color: '#FFC107', name: 'Yellow' },
       ].map((theme) => (
         <Box key={theme.color} sx={{ textAlign: 'center' }}>
-          <ChatBackground
-            primaryColor={theme.color}
-            width={200}
-            height={300}
-          >
+        <ChatBackground
+          backgroundColor={theme.color}
+          width={200}
+          height={300}
+        >
             <Box
               sx={{
                 display: 'flex',

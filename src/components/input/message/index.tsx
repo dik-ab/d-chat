@@ -21,6 +21,10 @@ interface MessageInputProps {
   isMicMode?: boolean;
   /** クラス名 */
   className?: string;
+  /** インライン表示モード（ChatContainer内で使用する場合） */
+  inline?: boolean;
+  /** 背景色 */
+  backgroundColor?: string
 }
 
 // 画面下部に固定されるコンテナ
@@ -33,6 +37,13 @@ const FixedBottomContainer = styled(Box)({
   width: '100%',
   borderTop: '1px solid #E0E0E0',
   backgroundColor: '#FFFFFF',
+});
+
+// インラインコンテナ（ChatContainer内で使用）
+const InlineContainer = styled(Box)({
+  width: '100%',
+  minHeight: '48px',
+  padding: '8px',
 });
 
 // 内部コンテナ
@@ -120,6 +131,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   disabled = false,
   isMicMode = false,
   className = '',
+  inline = false,
+  backgroundColor
 }) => {
   const [internalValue, setInternalValue] = useState('');
   
@@ -162,43 +175,48 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     }
   };
 
+  const Container = inline ? InlineContainer : FixedBottomContainer;
+
+  const content = (
+    <form onSubmit={handleFormSubmit}>
+      <FormContainer>
+        <InputContainer>
+          <StyledTextArea
+            minRows={1}
+            maxRows={10}
+            value={value}
+            placeholder={placeholder}
+            disabled={disabled}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+          />
+        </InputContainer>
+        <SendButtonContainer>
+          {isMicMode ? (
+            <MicButton
+              onClick={handleMicClick}
+              disabled={disabled}
+              aria-label="音声入力"
+            >
+              <MicIcon size={24} />
+            </MicButton>
+          ) : (
+            <SendButton
+              backgroundColor={backgroundColor}
+              onClick={handleSend}
+              disabled={disabled || !value.trim()}
+              size={44}
+            />
+          )}
+        </SendButtonContainer>
+      </FormContainer>
+    </form>
+  );
+
   return (
-    <FixedBottomContainer className={className}>
-      <InnerContainer>
-        <form onSubmit={handleFormSubmit}>
-          <FormContainer>
-            <InputContainer>
-              <StyledTextArea
-                minRows={1}
-                maxRows={10}
-                value={value}
-                placeholder={placeholder}
-                disabled={disabled}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-              />
-            </InputContainer>
-            <SendButtonContainer>
-              {isMicMode ? (
-                <MicButton
-                  onClick={handleMicClick}
-                  disabled={disabled}
-                  aria-label="音声入力"
-                >
-                  <MicIcon size={24} />
-                </MicButton>
-              ) : (
-                <SendButton
-                  onClick={handleSend}
-                  disabled={disabled || !value.trim()}
-                  size={44}
-                />
-              )}
-            </SendButtonContainer>
-          </FormContainer>
-        </form>
-      </InnerContainer>
-    </FixedBottomContainer>
+    <Container className={className}>
+      {inline ? content : <InnerContainer>{content}</InnerContainer>}
+    </Container>
   );
 };
 

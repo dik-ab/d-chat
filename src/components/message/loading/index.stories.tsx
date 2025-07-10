@@ -8,9 +8,13 @@ const meta: Meta<typeof LoadingMessage> = {
     layout: 'padded',
   },
   argTypes: {
-    color: {
+    backgroundColor: {
       control: 'color',
-      description: 'メッセージの背景色とアイコンの色',
+      description: 'メッセージの背景色',
+    },
+    iconUrl: {
+      control: 'text',
+      description: 'アイコンのURL',
     },
   },
 };
@@ -20,31 +24,31 @@ type Story = StoryObj<typeof LoadingMessage>;
 
 export const Default: Story = {
   args: {
-    color: '#1976d2',
+    backgroundColor: '#1976d2',
   },
 };
 
 export const CustomColor: Story = {
   args: {
-    color: '#4caf50',
+    backgroundColor: '#4caf50',
   },
 };
 
 export const RedColor: Story = {
   args: {
-    color: '#f44336',
+    backgroundColor: '#f44336',
   },
 };
 
 export const PurpleColor: Story = {
   args: {
-    color: '#9c27b0',
+    backgroundColor: '#9c27b0',
   },
 };
 
 export const InChatContext: Story = {
   args: {
-    color: '#1976d2',
+    backgroundColor: '#1976d2',
   },
   decorators: [
     (Story) => (

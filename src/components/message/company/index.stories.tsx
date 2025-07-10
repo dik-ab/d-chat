@@ -33,9 +33,13 @@ const meta: Meta<typeof CompanyMessage> = {
       control: 'text',
       description: 'メッセージテキスト',
     },
-    color: {
+    backgroundColor: {
       control: 'color',
-      description: 'メインカラー（このカラーから背景色とアイコン背景色を動的に生成）',
+      description: 'メッセージの背景色',
+    },
+    iconUrl: {
+      control: 'text',
+      description: 'アイコンのURL',
     },
     className: {
       control: 'text',
@@ -57,12 +61,12 @@ export const Default: Story = {
 export const CustomColor: Story = {
   args: {
     message: 'カスタムカラーのメッセージです。',
-    color: '#2196F3',
+    backgroundColor: '#2196F3',
   },
   parameters: {
     docs: {
       description: {
-        story: 'カスタムカラーを指定した表示例です。背景色とアイコン色が動的に生成されます。',
+        story: 'カスタムカラーを指定した表示例です。',
       },
     },
   },
@@ -123,7 +127,7 @@ export const EmojiMessage: Story = {
 export const GreenTheme: Story = {
   args: {
     message: 'グリーンテーマのメッセージです。',
-    color: '#4CAF50',
+    backgroundColor: '#4CAF50',
   },
   parameters: {
     docs: {
@@ -137,7 +141,7 @@ export const GreenTheme: Story = {
 export const PurpleTheme: Story = {
   args: {
     message: 'パープルテーマのメッセージです。',
-    color: '#9C27B0',
+    backgroundColor: '#9C27B0',
   },
   parameters: {
     docs: {
@@ -155,7 +159,7 @@ export const ChatLayout: Story = {
       <CompanyMessage message="こんにちは！" />
       <CompanyMessage 
         message="何かお手伝いできることはありますか？" 
-        color="#2196F3"
+        backgroundColor="#2196F3"
       />
       <CompanyMessage message="お気軽にお声がけください！😊" />
     </div>
