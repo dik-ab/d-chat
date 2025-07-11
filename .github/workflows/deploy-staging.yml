@@ -3,7 +3,7 @@ name: Deploy to S3 Staging
 on:
   push:
     branches:
-      - 'feature/**'
+      - staging
 
 jobs:
   deploy:
