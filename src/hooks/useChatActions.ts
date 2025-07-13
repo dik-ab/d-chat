@@ -35,7 +35,6 @@ export const useChatActions = ({
   isCreatingConversation,
   isReplying,
   createConversationTrigger,
-  fetchConversationTrigger,
   replyToConversationTrigger,
   forceStartPolling,
 }: UseChatActionsProps) => {
