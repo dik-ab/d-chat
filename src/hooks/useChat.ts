@@ -146,7 +146,7 @@ export const useChat = () => {
       return getConversation(IDENTIFIER, currentConversation!.token, accessTokenData!.token);
     },
     {
-      refreshInterval: (data) => {
+      refreshInterval: () => {
         // ポーリング対象の状態の場合のみ2秒間隔でポーリング
         const shouldPoll = currentConversation?.token && accessTokenData?.token && 
           (currentConversation?.state === 'answer_preparing' || 
