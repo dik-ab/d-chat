@@ -20,22 +20,54 @@ async function apiRequest<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+  console.log('[DEBUG] API Request:', {
+    url,
+    method: options.method || 'GET',
+    hasBody: !!options.body,
+    timestamp: new Date().toISOString(),
+    apiBaseUrl: API_BASE_URL
   });
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
 
-  if (!response.ok) {
-    throw new ApiErrorClass(
-      `API request failed: ${response.statusText}`,
-      response.status
-    );
+    console.log('[DEBUG] API Response:', {
+      url,
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+      timestamp: new Date().toISOString()
+    });
+
+    if (!response.ok) {
+      throw new ApiErrorClass(
+        `API request failed: ${response.statusText}`,
+        response.status
+      );
+    }
+
+    const data = await response.json();
+    console.log('[DEBUG] API Response Data:', {
+      url,
+      dataKeys: Object.keys(data),
+      timestamp: new Date().toISOString()
+    });
+
+    return data;
+  } catch (error) {
+    console.error('[DEBUG] API Error:', {
+      url,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+    throw error;
   }
-
-  return response.json();
 }
 
 // 010. アクセストークン取得
