@@ -20,6 +20,7 @@ interface UseChatActionsProps {
   createConversationTrigger: (arg: { content: string }) => Promise<Conversation>;
   fetchConversationTrigger: (arg: { token: string }) => Promise<Conversation>;
   replyToConversationTrigger: (arg: { token: string; content: string }) => Promise<Conversation>;
+  forceStartPolling: () => void;
 }
 
 export const useChatActions = ({
@@ -34,7 +35,9 @@ export const useChatActions = ({
   isCreatingConversation,
   isReplying,
   createConversationTrigger,
+  fetchConversationTrigger,
   replyToConversationTrigger,
+  forceStartPolling,
 }: UseChatActionsProps) => {
   const handleSendMessage = async (content: string) => {
     if (!accessTokenData?.token || isCreatingConversation || isReplying) {
@@ -79,15 +82,22 @@ export const useChatActions = ({
         conversation = await createConversationTrigger({ content });
       }
       
-      setCurrentConversation(conversation);
-      
-      // 返信送信の場合は、即座に状態を更新してポーリングを開始
+      // 返信送信の場合は、ポーリングを確実に開始するために状態を調整
       if (currentConversation && currentConversation.state === 'reply_waiting') {
-        console.log('[DEBUG] Reply sent, updating conversation state for polling');
+        console.log('[DEBUG] Reply sent, forcing polling state');
+        // 返信送信後は即座にポーリング状態にする
         setCurrentConversation({
           ...conversation,
-          state: 'answer_preparing' // ポーリングを開始するために状態を変更
+          state: 'reply_received' // ポーリング条件に含まれる状態に設定
         });
+        
+        // 強制的にポーリングを開始
+        setTimeout(() => {
+          console.log('[DEBUG] Calling forceStartPolling after reply');
+          forceStartPolling();
+        }, 100);
+      } else {
+        setCurrentConversation(conversation);
       }
       
     } catch (error) {

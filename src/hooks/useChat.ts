@@ -124,12 +124,17 @@ export const useChat = () => {
     };
   }, [currentConversation?.token, accessTokenData?.token, currentConversation?.state]);
 
+  // SWRキーを明示的に生成
+  const swrKey = useMemo(() => {
+    if (currentConversation?.token && accessTokenData?.token) {
+      return ['conversation', IDENTIFIER, currentConversation.token, accessTokenData.token];
+    }
+    return null;
+  }, [currentConversation?.token, accessTokenData?.token]);
+
   // 6. 会話情報取得（ポーリング用）
-  const { data: conversationData, error: conversationError, isLoading: isConversationLoading } = useSWR<Conversation>(
-    currentConversation?.token && accessTokenData?.token && 
-    (currentConversation?.state === 'answer_preparing' || currentConversation?.state === 'initial' || currentConversation?.state === 'reply_received')
-      ? ['conversation', IDENTIFIER, currentConversation.token, accessTokenData.token] 
-      : null,
+  const { data: conversationData, error: conversationError, isLoading: isConversationLoading, mutate: mutateConversation } = useSWR<Conversation>(
+    swrKey,
     () => {
       console.log('[DEBUG] SWR Polling - Fetching conversation:', {
         conversationToken: currentConversation!.token,
@@ -141,7 +146,15 @@ export const useChat = () => {
       return getConversation(IDENTIFIER, currentConversation!.token, accessTokenData!.token);
     },
     {
-      refreshInterval: 2000,
+      refreshInterval: (data) => {
+        // ポーリング対象の状態の場合のみ2秒間隔でポーリング
+        const shouldPoll = currentConversation?.token && accessTokenData?.token && 
+          (currentConversation?.state === 'answer_preparing' || 
+           currentConversation?.state === 'initial' || 
+           currentConversation?.state === 'reply_received');
+        console.log('[DEBUG] RefreshInterval check:', { shouldPoll, state: currentConversation?.state });
+        return shouldPoll ? 2000 : 0;
+      },
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       refreshWhenHidden: true,
@@ -170,6 +183,31 @@ export const useChat = () => {
       }
     }
   );
+
+  // 強制ポーリング関数
+  const forceStartPolling = useMemo(() => {
+    return () => {
+      if (swrKey) {
+        console.log('[DEBUG] Force mutate with key:', swrKey);
+        mutateConversation();
+      } else {
+        console.log('[DEBUG] Cannot mutate - no SWR key available');
+      }
+    };
+  }, [swrKey, mutateConversation]);
+
+  // currentConversationの状態変化を監視してポーリングを強制開始
+  useEffect(() => {
+    const shouldStartPolling = currentConversation?.token && accessTokenData?.token && 
+      (currentConversation?.state === 'answer_preparing' || 
+       currentConversation?.state === 'initial' || 
+       currentConversation?.state === 'reply_received');
+    
+    if (shouldStartPolling) {
+      console.log('[DEBUG] Force starting polling due to state change:', currentConversation?.state);
+      forceStartPolling();
+    }
+  }, [currentConversation?.state, currentConversation?.token, accessTokenData?.token, forceStartPolling]);
 
   // SWRの状態変化をログ出力
   useEffect(() => {
@@ -207,5 +245,7 @@ export const useChat = () => {
     createConversationTrigger,
     fetchConversationTrigger,
     replyToConversationTrigger,
+    mutateConversation,
+    forceStartPolling,
   };
 };

@@ -45,6 +45,7 @@ export default function Home() {
     createConversationTrigger: chatState.createConversationTrigger,
     fetchConversationTrigger: chatState.fetchConversationTrigger,
     replyToConversationTrigger: chatState.replyToConversationTrigger,
+    forceStartPolling: chatState.forceStartPolling,
   });
 
   // メッセージが追加されたら自動スクロール
