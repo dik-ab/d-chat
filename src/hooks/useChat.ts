@@ -152,6 +152,15 @@ export const useChat = () => {
           questionsCount: data.questions?.length || 0,
           timestamp: new Date().toISOString()
         });
+        
+        // 状態が変化した場合の詳細ログ
+        if (currentConversation?.state !== data.state) {
+          console.log('[DEBUG] State Transition:', {
+            from: currentConversation?.state,
+            to: data.state,
+            timestamp: new Date().toISOString()
+          });
+        }
       },
       onError: (error) => {
         console.error('[DEBUG] SWR Polling - Error:', {

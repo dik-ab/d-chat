@@ -82,23 +82,14 @@ export const useChatActions = ({
       
       setCurrentConversation(conversation);
       
-      // 会話作成/返信直後に明示的に会話情報を取得
-      setTimeout(async () => {
-        try {
-          const updatedConversation = await fetchConversationTrigger({ token: conversation.token });
-          
-          if (updatedConversation.state === 'answer_preparing' || updatedConversation.state === 'initial') {
-            setCurrentConversation(updatedConversation);
-          } else if (updatedConversation.state === 'reply_waiting' || updatedConversation.questions.some(q => q.answer)) {
-            setCurrentConversation(updatedConversation);
-          } else {
-            setCurrentConversation(updatedConversation);
-          }
-        } catch (fetchError) {
-          console.error('Failed to fetch conversation after API call:', fetchError);
-          setCurrentConversation(conversation);
-        }
-      }, 500);
+      // 返信送信の場合は、即座に状態を更新してポーリングを開始
+      if (currentConversation && currentConversation.state === 'reply_waiting') {
+        console.log('[DEBUG] Reply sent, updating conversation state for polling');
+        setCurrentConversation({
+          ...conversation,
+          state: 'answer_preparing' // ポーリングを開始するために状態を変更
+        });
+      }
       
     } catch (error) {
       console.error('Failed to send message:', error);
