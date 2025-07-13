@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { getAccessToken, getChatSetting, createConversation, getConversation, replyToConversation } from '../lib/api';
@@ -76,19 +76,65 @@ export const useChat = () => {
     }
   );
 
+  // ポーリング条件のデバッグログ
+  useEffect(() => {
+    const shouldPoll = currentConversation?.token && accessTokenData?.token && 
+      (currentConversation?.state === 'answer_preparing' || 
+       currentConversation?.state === 'initial' || 
+       currentConversation?.state === 'reply_received');
+    
+    console.log('[DEBUG] Polling conditions:', {
+      hasConversationToken: !!currentConversation?.token,
+      hasAccessToken: !!accessTokenData?.token,
+      conversationState: currentConversation?.state,
+      shouldPoll,
+      apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+      timestamp: new Date().toISOString()
+    });
+  }, [currentConversation, accessTokenData]);
+
   // 6. 会話情報取得（ポーリング用）
-  const { data: conversationData } = useSWR<Conversation>(
+  const { data: conversationData, error: conversationError, isLoading: isConversationLoading } = useSWR<Conversation>(
     currentConversation?.token && accessTokenData?.token && 
     (currentConversation?.state === 'answer_preparing' || currentConversation?.state === 'initial' || currentConversation?.state === 'reply_received')
       ? ['conversation', IDENTIFIER, currentConversation.token, accessTokenData.token] 
       : null,
-    () => getConversation(IDENTIFIER, currentConversation!.token, accessTokenData!.token),
+    () => {
+      console.log('[DEBUG] SWR Polling - Fetching conversation:', {
+        conversationToken: currentConversation!.token,
+        timestamp: new Date().toISOString()
+      });
+      return getConversation(IDENTIFIER, currentConversation!.token, accessTokenData!.token);
+    },
     {
       refreshInterval: 2000,
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
+      onSuccess: (data) => {
+        console.log('[DEBUG] SWR Polling - Success:', {
+          conversationState: data.state,
+          questionsCount: data.questions?.length || 0,
+          timestamp: new Date().toISOString()
+        });
+      },
+      onError: (error) => {
+        console.error('[DEBUG] SWR Polling - Error:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
     }
   );
+
+  // SWRの状態変化をログ出力
+  useEffect(() => {
+    console.log('[DEBUG] SWR State:', {
+      isConversationLoading,
+      hasConversationData: !!conversationData,
+      conversationError: conversationError instanceof Error ? conversationError.message : conversationError,
+      timestamp: new Date().toISOString()
+    });
+  }, [isConversationLoading, conversationData, conversationError]);
 
   const isLoading = isTokenLoading || isSettingLoading;
   const error = tokenError || settingError;
