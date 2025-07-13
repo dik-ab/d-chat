@@ -111,7 +111,7 @@ export const useChat = () => {
           count: pollingCount,
           timestamp: new Date().toISOString(),
           userAgent: navigator.userAgent,
-          connectionType: (navigator as any).connection?.effectiveType || 'unknown'
+          connectionType: (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType || 'unknown'
         });
       }, 2000);
     }
