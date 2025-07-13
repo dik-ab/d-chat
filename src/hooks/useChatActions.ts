@@ -34,7 +34,6 @@ export const useChatActions = ({
   isCreatingConversation,
   isReplying,
   createConversationTrigger,
-  fetchConversationTrigger,
   replyToConversationTrigger,
 }: UseChatActionsProps) => {
   const handleSendMessage = async (content: string) => {
