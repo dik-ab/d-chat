@@ -93,6 +93,37 @@ export const useChat = () => {
     });
   }, [currentConversation, accessTokenData]);
 
+  // CloudFrontでのポーリング問題調査用のタイマー監視
+  useEffect(() => {
+    let pollingTimer: NodeJS.Timeout | null = null;
+    let pollingCount = 0;
+    
+    const shouldPoll = currentConversation?.token && accessTokenData?.token && 
+      (currentConversation?.state === 'answer_preparing' || 
+       currentConversation?.state === 'initial' || 
+       currentConversation?.state === 'reply_received');
+    
+    if (shouldPoll) {
+      console.log('[DEBUG] CloudFront Polling Monitor - Starting manual timer');
+      pollingTimer = setInterval(() => {
+        pollingCount++;
+        console.log('[DEBUG] CloudFront Polling Monitor - Timer tick:', {
+          count: pollingCount,
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          connectionType: (navigator as any).connection?.effectiveType || 'unknown'
+        });
+      }, 2000);
+    }
+    
+    return () => {
+      if (pollingTimer) {
+        console.log('[DEBUG] CloudFront Polling Monitor - Stopping timer');
+        clearInterval(pollingTimer);
+      }
+    };
+  }, [currentConversation?.token, accessTokenData?.token, currentConversation?.state]);
+
   // 6. 会話情報取得（ポーリング用）
   const { data: conversationData, error: conversationError, isLoading: isConversationLoading } = useSWR<Conversation>(
     currentConversation?.token && accessTokenData?.token && 
@@ -102,7 +133,10 @@ export const useChat = () => {
     () => {
       console.log('[DEBUG] SWR Polling - Fetching conversation:', {
         conversationToken: currentConversation!.token,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        isCloudFront: window.location.hostname.includes('cloudfront') || window.location.hostname.includes('amazonaws'),
+        pageVisibility: document.visibilityState,
+        networkOnline: navigator.onLine
       });
       return getConversation(IDENTIFIER, currentConversation!.token, accessTokenData!.token);
     },
@@ -110,6 +144,8 @@ export const useChat = () => {
       refreshInterval: 2000,
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
+      refreshWhenHidden: true,
+      refreshWhenOffline: false,
       onSuccess: (data) => {
         console.log('[DEBUG] SWR Polling - Success:', {
           conversationState: data.state,
