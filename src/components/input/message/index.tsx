@@ -94,6 +94,7 @@ const StyledTextArea = styled(TextareaAutosize)({
   paddingTop: '8px',
   paddingBottom: '8px',
   lineHeight: 1.5,
+  color: '#333333', // 通常の文字色を明示的に設定
   '&::placeholder': {
     color: '#8E8E8E',
     opacity: 1,

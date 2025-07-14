@@ -37,6 +37,7 @@ function ChatPage() {
   
   // チャットアクション
   const { handleSendMessage, handleRating, handleCloseChat } = useChatActions({
+    identifier: identifier || 'livepass_test_chatui',
     accessTokenData: chatState.accessTokenData,
     currentConversation: chatState.currentConversation,
     setCurrentConversation: chatState.setCurrentConversation,
