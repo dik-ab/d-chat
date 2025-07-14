@@ -75,6 +75,21 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     if (latestMessageHasSpecificStatus) {
       // 最新メッセージが特定のステータスの場合は自動スクロールを無効化
       setIsAutoScrollEnabled(false);
+      
+      // 最後のユーザーメッセージにスクロール
+      if (lastUserMessageId.current && messageRefs.current[lastUserMessageId.current] && chatAreaRef.current) {
+        const userMessageElement = messageRefs.current[lastUserMessageId.current];
+        const chatArea = chatAreaRef.current;
+        
+        // userMessageElementがnullでないことを確認
+        if (userMessageElement) {
+          // ユーザーメッセージの位置を取得
+          const userMessageTop = userMessageElement.offsetTop;
+          
+          // チャットエリアの上部にユーザーメッセージが来るようにスクロール
+          chatArea.scrollTop = userMessageTop - 10; // 少し余白を持たせる
+        }
+      }
       return;
     }
 
