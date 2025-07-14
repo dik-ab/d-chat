@@ -48,7 +48,14 @@ export const useChatActions = ({
       id: Date.now(),
       type: 'user',
       content,
-      timestamp: new Date()
+      timestamp: new Date(),
+      conversationStatus: currentConversation ? {
+        state: currentConversation.state,
+        token: currentConversation.token,
+        ratingTypeId: currentConversation.rating_type_id
+      } : {
+        state: 'initial'
+      }
     };
     
     setMessages(prev => [...prev, userMessage]);
@@ -59,7 +66,14 @@ export const useChatActions = ({
       id: loadingId,
       type: 'company',
       content: '',
-      timestamp: new Date()
+      timestamp: new Date(),
+      conversationStatus: currentConversation ? {
+        state: 'answer_preparing',
+        token: currentConversation.token,
+        ratingTypeId: currentConversation.rating_type_id
+      } : {
+        state: 'answer_preparing'
+      }
     };
     
     setMessages(prev => [...prev, loadingMessage]);
@@ -115,7 +129,10 @@ export const useChatActions = ({
           id: Date.now() + Math.random(),
           type: 'company',
           content: '申し訳ございません。一時的にサービスがご利用いただけません。しばらく経ってから再度お試しください。',
-          timestamp: new Date()
+          timestamp: new Date(),
+          conversationStatus: {
+            state: 'failed'
+          }
         };
         setMessages(current => [...current, errorMessage]);
       }, 500);
@@ -156,7 +173,12 @@ export const useChatActions = ({
           id: Date.now() + Math.random(),
           type: 'company',
           content: 'お問い合わせいただきありがとうございました。\nいただいた評価は品質の向上のために利用させていただきます。\n\n他にも質問がございましたら、再度メッセージの送信を行うことでチャットを開始することができます',
-          timestamp: new Date()
+          timestamp: new Date(),
+          conversationStatus: {
+            state: currentConversation.state,
+            token: currentConversation.token,
+            ratingTypeId: ratingTypeId
+          }
         };
         
         setMessages(prev => [...prev, thankYouMessage]);

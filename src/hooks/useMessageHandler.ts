@@ -44,7 +44,10 @@ export const useMessageHandler = ({
         id: Date.now(),
         type: 'company',
         content: chatSetting.welcome_message,
-        timestamp: new Date()
+        timestamp: new Date(),
+        conversationStatus: {
+          state: 'initial'
+        }
       };
       setMessages([welcomeMessage]);
     }
@@ -102,14 +105,24 @@ const handleTop3Response = (
     id: Date.now() + Math.random(),
     type: 'company',
     content: question.answer.content,
-    timestamp: new Date()
+    timestamp: new Date(),
+    conversationStatus: {
+      state: currentConversation.state,
+      token: currentConversation.token,
+      ratingTypeId: currentConversation.rating_type_id
+    }
   };
   
   const ragMessages: Message[] = question.rag_results.slice(0, 3).map((ragResult, index: number) => ({
     id: Date.now() + Math.random() + index + 1,
     type: 'company' as const,
     content: ragResult.answer,
-    timestamp: new Date()
+    timestamp: new Date(),
+    conversationStatus: {
+      state: currentConversation.state,
+      token: currentConversation.token,
+      ratingTypeId: currentConversation.rating_type_id
+    }
   }));
   
   setMessages(prev => [...prev, firstMessage]);
@@ -139,14 +152,24 @@ const handleTop1Response = (
     id: Date.now() + Math.random(),
     type: 'company',
     content: question.answer.content,
-    timestamp: new Date()
+    timestamp: new Date(),
+    conversationStatus: {
+      state: currentConversation.state,
+      token: currentConversation.token,
+      ratingTypeId: currentConversation.rating_type_id
+    }
   };
   
   const ragMessage: Message = {
     id: Date.now() + Math.random() + 1,
     type: 'company',
     content: question.rag_results[0].answer,
-    timestamp: new Date()
+    timestamp: new Date(),
+    conversationStatus: {
+      state: currentConversation.state,
+      token: currentConversation.token,
+      ratingTypeId: currentConversation.rating_type_id
+    }
   };
   
   setMessages(prev => [...prev, firstMessage]);
@@ -175,7 +198,12 @@ const handleNormalResponse = (
     id: Date.now() + Math.random(),
     type: 'company',
     content: question.answer.content,
-    timestamp: new Date()
+    timestamp: new Date(),
+    conversationStatus: {
+      state: currentConversation.state,
+      token: currentConversation.token,
+      ratingTypeId: currentConversation.rating_type_id
+    }
   };
   
   setMessages(prev => [...prev, answerMessage]);
@@ -208,7 +236,12 @@ const addResultAndRatingMessages = (
       id: Date.now() + Math.random() + 1000,
       type: 'company',
       content: messageContent,
-      timestamp: new Date()
+      timestamp: new Date(),
+      conversationStatus: {
+        state: currentConversation.state,
+        token: currentConversation.token,
+        ratingTypeId: currentConversation.rating_type_id
+      }
     };
     
     setMessages(prev => [...prev, resultMessageObj]);
@@ -226,6 +259,11 @@ const addResultAndRatingMessages = (
           unmatchedMessage: '',
           conversationState: currentConversation.state as 'top1' | 'top3' | 'unmatched',
           contactPageUrl: null
+        },
+        conversationStatus: {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
         }
       };
       
