@@ -8,9 +8,7 @@ import { getOrCreateFingerprint } from '../lib/fingerprint';
 import { AccessTokenResponse, ChatSetting, Conversation } from '../types/api';
 import { Message } from '../types/chat';
 
-const IDENTIFIER = 'livepass_test_chatui';
-
-export const useChat = () => {
+export const useChat = (identifier: string = 'livepass_test_chatui') => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [processedQuestionIds, setProcessedQuestionIds] = useState<Set<number>>(new Set());
@@ -34,8 +32,8 @@ export const useChat = () => {
 
   // 1. アクセストークン取得
   const { data: accessTokenData, error: tokenError, isLoading: isTokenLoading } = useSWR<AccessTokenResponse>(
-    ['access-token', IDENTIFIER, deviceFingerprint],
-    () => getAccessToken(IDENTIFIER, deviceFingerprint),
+    ['access-token', identifier, deviceFingerprint],
+    () => getAccessToken(identifier, deviceFingerprint),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -44,8 +42,8 @@ export const useChat = () => {
 
   // 2. Chat設定取得
   const { data: chatSetting, error: settingError, isLoading: isSettingLoading } = useSWR<ChatSetting>(
-    accessTokenData?.token ? ['chat-setting', IDENTIFIER, accessTokenData.token] : null,
-    () => getChatSetting(IDENTIFIER, accessTokenData!.token),
+    accessTokenData?.token ? ['chat-setting', identifier, accessTokenData.token] : null,
+    () => getChatSetting(identifier, accessTokenData!.token),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
@@ -54,25 +52,25 @@ export const useChat = () => {
 
   // 3. 会話作成のMutation
   const { trigger: createConversationTrigger, isMutating: isCreatingConversation } = useSWRMutation(
-    accessTokenData?.token ? ['create-conversation', IDENTIFIER] : null,
-    async ([, identifier], { arg }: { arg: { content: string } }) => {
-      return createConversation(identifier, arg.content, accessTokenData!.token);
+    accessTokenData?.token ? ['create-conversation', identifier] : null,
+    async ([, identifierKey], { arg }: { arg: { content: string } }) => {
+      return createConversation(identifierKey, arg.content, accessTokenData!.token);
     }
   );
 
   // 4. 会話情報取得のMutation
   const { trigger: fetchConversationTrigger } = useSWRMutation(
-    accessTokenData?.token ? ['fetch-conversation', IDENTIFIER] : null,
-    async ([, identifier], { arg }: { arg: { token: string } }) => {
-      return getConversation(identifier, arg.token, accessTokenData!.token);
+    accessTokenData?.token ? ['fetch-conversation', identifier] : null,
+    async ([, identifierKey], { arg }: { arg: { token: string } }) => {
+      return getConversation(identifierKey, arg.token, accessTokenData!.token);
     }
   );
 
   // 5. 返信のMutation
   const { trigger: replyToConversationTrigger, isMutating: isReplying } = useSWRMutation(
-    accessTokenData?.token ? ['reply-conversation', IDENTIFIER] : null,
-    async ([, identifier], { arg }: { arg: { token: string; content: string } }) => {
-      return replyToConversation(identifier, arg.token, arg.content, accessTokenData!.token);
+    accessTokenData?.token ? ['reply-conversation', identifier] : null,
+    async ([, identifierKey], { arg }: { arg: { token: string; content: string } }) => {
+      return replyToConversation(identifierKey, arg.token, arg.content, accessTokenData!.token);
     }
   );
 
@@ -127,10 +125,10 @@ export const useChat = () => {
   // SWRキーを明示的に生成
   const swrKey = useMemo(() => {
     if (currentConversation?.token && accessTokenData?.token) {
-      return ['conversation', IDENTIFIER, currentConversation.token, accessTokenData.token];
+      return ['conversation', identifier, currentConversation.token, accessTokenData.token];
     }
     return null;
-  }, [currentConversation?.token, accessTokenData?.token]);
+  }, [currentConversation?.token, accessTokenData?.token, identifier]);
 
   // 6. 会話情報取得（ポーリング用）
   const { data: conversationData, error: conversationError, isLoading: isConversationLoading, mutate: mutateConversation } = useSWR<Conversation>(
@@ -143,7 +141,7 @@ export const useChat = () => {
         pageVisibility: document.visibilityState,
         networkOnline: navigator.onLine
       });
-      return getConversation(IDENTIFIER, currentConversation!.token, accessTokenData!.token);
+      return getConversation(identifier, currentConversation!.token, accessTokenData!.token);
     },
     {
       refreshInterval: () => {

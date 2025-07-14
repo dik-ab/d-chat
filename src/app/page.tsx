@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useChat } from '../hooks/useChat';
 import { useMessageHandler } from '../hooks/useMessageHandler';
 import { useChatActions } from '../hooks/useChatActions';
@@ -8,9 +9,13 @@ import { ChatContainer } from '../components/chat/ChatContainer';
 
 export default function Home() {
   const chatAreaRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  
+  // クエリパラメータからidentifierを取得
+  const identifier = searchParams.get('identifier');
   
   // チャット関連のstate管理
-  const chatState = useChat();
+  const chatState = useChat(identifier || 'livepass_test_chatui');
   
   // メッセージ処理
   useMessageHandler({
@@ -54,6 +59,11 @@ export default function Home() {
       chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
     }
   }, [chatState.messages]);
+
+  // identifierが取得できた場合のログ出力（デバッグ用）
+  useEffect(() => {
+    console.log('Current identifier:', identifier || 'livepass_test_chatui (default)');
+  }, [identifier]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
