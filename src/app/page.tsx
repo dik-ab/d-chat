@@ -60,11 +60,6 @@ function ChatPage() {
     }
   }, [chatState.messages]);
 
-  // identifierが取得できた場合のログ出力（デバッグ用）
-  useEffect(() => {
-    console.log('Current identifier:', identifier || 'livepass_test_chatui (default)');
-  }, [identifier]);
-
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
       <ChatContainer
