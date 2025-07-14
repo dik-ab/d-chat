@@ -172,7 +172,7 @@ export const useChatActions = ({
         const thankYouMessage: Message = {
           id: Date.now() + Math.random(),
           type: 'company',
-          content: 'お問い合わせいただきありがとうございました。\nいただいた評価は品質の向上のために利用させていただきます。\n\n他にも質問がございましたら、再度メッセージの送信を行うことでチャットを開始することができます',
+          content: '評価いただきありがとうございました。\nいただいた評価は品質の向上のために利用させていただきます。\n\n他にも質問がございましたら、再度メッセージの送信を行うことでチャットを開始することができます',
           timestamp: new Date(),
           conversationStatus: {
             state: 'final',
