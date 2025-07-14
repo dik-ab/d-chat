@@ -4,9 +4,8 @@ import { Message } from '@/types/chat';
 import { rateConversation } from '../lib/api';
 import { Conversation, AccessTokenResponse } from '../types/api';
 
-const IDENTIFIER = 'livepass_test_chatui';
-
 interface UseChatActionsProps {
+  identifier: string;
   accessTokenData: AccessTokenResponse | undefined;
   currentConversation: Conversation | null;
   setCurrentConversation: React.Dispatch<React.SetStateAction<Conversation | null>>;
@@ -24,6 +23,7 @@ interface UseChatActionsProps {
 }
 
 export const useChatActions = ({
+  identifier,
   accessTokenData,
   currentConversation,
   setCurrentConversation,
@@ -161,7 +161,7 @@ export const useChatActions = ({
       }
       
       await rateConversation(
-        IDENTIFIER,
+        identifier,
         currentConversation.token,
         ratingTypeId,
         accessTokenData.token
