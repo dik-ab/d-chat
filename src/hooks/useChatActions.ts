@@ -169,7 +169,7 @@ export const useChatActions = ({
 
   const handleCloseChat = () => {
     if (window.parent) {
-      window.parent.postMessage({ type: 'CLOSE_CHAT' }, '*');
+      window.parent.postMessage('qam-close', '*');
     }
   };
 
