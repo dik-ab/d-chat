@@ -10,4 +10,9 @@ export interface Message {
     conversationState: 'top1' | 'top3' | 'unmatched';
     contactPageUrl?: string | null;
   };
+  conversationStatus?: {
+    state: 'initial' | 'answer_preparing' | 'reply_waiting' | 'reply_received' | 'top1' | 'top3' | 'unmatched' | 'failed' | 'final';
+    token?: string;
+    ratingTypeId?: number;
+  };
 }

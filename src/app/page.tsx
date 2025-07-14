@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, Suspense } from 'react';
+import React, { useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useChat } from '../hooks/useChat';
 import { useMessageHandler } from '../hooks/useMessageHandler';
@@ -53,12 +53,6 @@ function ChatPage() {
     forceStartPolling: chatState.forceStartPolling,
   });
 
-  // メッセージが追加されたら自動スクロール
-  useEffect(() => {
-    if (chatAreaRef.current) {
-      chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
-    }
-  }, [chatState.messages]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>

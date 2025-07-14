@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from '../../theme/theme';
@@ -42,6 +42,57 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onRating,
   onCloseChat,
 }) => {
+  const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const lastUserMessageId = useRef<number | null>(null);
+
+  // メッセージ要素への参照を設定
+  const setMessageRef = (messageId: number) => (el: HTMLDivElement | null) => {
+    messageRefs.current[messageId] = el;
+  };
+
+  // 最新のユーザーメッセージIDを追跡
+  useEffect(() => {
+    const userMessages = messages.filter(msg => msg.type === 'user');
+    if (userMessages.length > 0) {
+      const latestUserMessage = userMessages[userMessages.length - 1];
+      lastUserMessageId.current = latestUserMessage.id;
+    }
+  }, [messages]);
+
+  // 通常の自動スクロール（新着メッセージのステータスに基づく）
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    // 最新のメッセージ（新着メッセージ）を取得
+    const latestMessage = messages[messages.length - 1];
+    
+    // 最新メッセージが特定のステータスかチェック
+    const latestMessageHasSpecificStatus = latestMessage.conversationStatus?.state && 
+      ['top1', 'top3', 'unmatched'].includes(latestMessage.conversationStatus.state);
+
+    if (latestMessageHasSpecificStatus) {
+      
+      // 最後のユーザーメッセージにスクロール
+      if (lastUserMessageId.current && messageRefs.current[lastUserMessageId.current] && chatAreaRef.current) {
+        const userMessageElement = messageRefs.current[lastUserMessageId.current];
+        const chatArea = chatAreaRef.current;
+        
+        // userMessageElementがnullでないことを確認
+        if (userMessageElement) {
+          // ユーザーメッセージの位置を取得
+          const userMessageTop = userMessageElement.offsetTop;
+          
+          // チャットエリアの上部にユーザーメッセージが来るようにスクロール
+          chatArea.scrollTop = userMessageTop - 10; // 少し余白を持たせる
+        }
+      }
+      return;
+    }
+    if (chatAreaRef.current) {
+      chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
   // ローディング中の表示
   if (isLoading) {
     return (
@@ -157,7 +208,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             }}
           >
             {messages.map((message) => (
-              <Box key={message.id} sx={{ width: '100%', padding: '4px 8px' }}>
+              <Box 
+                key={message.id} 
+                ref={setMessageRef(message.id)}
+                sx={{ width: '100%', padding: '4px 8px' }}
+              >
                 {message.type === 'user' ? (
                   <UserMessage 
                     message={message.content}
