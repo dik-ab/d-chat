@@ -42,8 +42,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onRating,
   onCloseChat,
 }) => {
-  const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
-  const [isScrolling, setIsScrolling] = useState(false);
   const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   const lastUserMessageId = useRef<number | null>(null);
 
@@ -73,8 +71,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       ['top1', 'top3', 'unmatched'].includes(latestMessage.conversationStatus.state);
 
     if (latestMessageHasSpecificStatus) {
-      // 最新メッセージが特定のステータスの場合は自動スクロールを無効化
-      setIsAutoScrollEnabled(false);
       
       // 最後のユーザーメッセージにスクロール
       if (lastUserMessageId.current && messageRefs.current[lastUserMessageId.current] && chatAreaRef.current) {
@@ -92,13 +88,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       }
       return;
     }
-
-    // 最新メッセージが特定のステータス以外の場合は自動スクロールを有効化し、最後のメッセージまでスクロール
-    setIsAutoScrollEnabled(true);
-    if (!isScrolling && chatAreaRef.current) {
+    if (chatAreaRef.current) {
       chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
     }
-  }, [messages, isScrolling]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
   // ローディング中の表示
   if (isLoading) {
     return (
