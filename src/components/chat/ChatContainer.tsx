@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from '../../theme/theme';
@@ -42,6 +42,48 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onRating,
   onCloseChat,
 }) => {
+  const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const lastUserMessageId = useRef<number | null>(null);
+
+  // メッセージ要素への参照を設定
+  const setMessageRef = (messageId: number) => (el: HTMLDivElement | null) => {
+    messageRefs.current[messageId] = el;
+  };
+
+  // 最新のユーザーメッセージIDを追跡
+  useEffect(() => {
+    const userMessages = messages.filter(msg => msg.type === 'user');
+    if (userMessages.length > 0) {
+      const latestUserMessage = userMessages[userMessages.length - 1];
+      lastUserMessageId.current = latestUserMessage.id;
+    }
+  }, [messages]);
+
+  // 通常の自動スクロール（新着メッセージのステータスに基づく）
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    // 最新のメッセージ（新着メッセージ）を取得
+    const latestMessage = messages[messages.length - 1];
+    
+    // 最新メッセージが特定のステータスかチェック
+    const latestMessageHasSpecificStatus = latestMessage.conversationStatus?.state && 
+      ['top1', 'top3', 'unmatched'].includes(latestMessage.conversationStatus.state);
+
+    if (latestMessageHasSpecificStatus) {
+      // 最新メッセージが特定のステータスの場合は自動スクロールを無効化
+      setIsAutoScrollEnabled(false);
+      return;
+    }
+
+    // 最新メッセージが特定のステータス以外の場合は自動スクロールを有効化し、最後のメッセージまでスクロール
+    setIsAutoScrollEnabled(true);
+    if (!isScrolling && chatAreaRef.current) {
+      chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
+    }
+  }, [messages, isScrolling]);
   // ローディング中の表示
   if (isLoading) {
     return (
@@ -157,7 +199,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             }}
           >
             {messages.map((message) => (
-              <Box key={message.id} sx={{ width: '100%', padding: '4px 8px' }}>
+              <Box 
+                key={message.id} 
+                ref={setMessageRef(message.id)}
+                sx={{ width: '100%', padding: '4px 8px' }}
+              >
                 {message.type === 'user' ? (
                   <UserMessage 
                     message={message.content}
