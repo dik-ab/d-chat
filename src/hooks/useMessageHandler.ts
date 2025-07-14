@@ -73,12 +73,17 @@ export const useMessageHandler = ({
               setLoadingMessageId(null);
             }
 
+            // 新しい質問が処理される時にshowRatingMessageをリセット
+            if (showRatingMessage) {
+              setShowRatingMessage(false);
+            }
+
             if (currentConversation.state === 'top3' && question.answer.answer_type === 'top3_match' && question.rag_results && question.rag_results.length >= 3) {
-              handleTop3Response(question, currentConversation, chatSetting, setMessages, setShowRatingMessage, showRatingMessage);
+              handleTop3Response(question, currentConversation, chatSetting, setMessages, setShowRatingMessage, false);
             } else if (currentConversation.state === 'top1' && question.rag_results && question.rag_results.length >= 1) {
-              handleTop1Response(question, currentConversation, chatSetting, setMessages, setShowRatingMessage, showRatingMessage);
+              handleTop1Response(question, currentConversation, chatSetting, setMessages, setShowRatingMessage, false);
             } else {
-              handleNormalResponse(question, currentConversation, chatSetting, setMessages, setShowRatingMessage, showRatingMessage);
+              handleNormalResponse(question, currentConversation, chatSetting, setMessages, setShowRatingMessage, false);
             }
             
             setProcessedQuestionIds(prev => new Set([...prev, question.id]));
@@ -96,7 +101,7 @@ const handleTop3Response = (
   chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
-  showRatingMessage: boolean
+  resetShowRatingMessage: boolean
 ) => {
   
   if (!question.answer || !question.rag_results) return;
@@ -130,7 +135,7 @@ const handleTop3Response = (
   setTimeout(() => {
     setMessages(prev => [...prev, ...ragMessages]);
     
-    if (!showRatingMessage && chatSetting) {
+    if (chatSetting) {
       addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
     }
   }, 500);
@@ -143,7 +148,7 @@ const handleTop1Response = (
   chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
-  showRatingMessage: boolean
+  resetShowRatingMessage: boolean
 ) => {
   
   if (!question.answer || !question.rag_results || question.rag_results.length === 0) return;
@@ -177,7 +182,7 @@ const handleTop1Response = (
   setTimeout(() => {
     setMessages(prev => [...prev, ragMessage]);
     
-    if (!showRatingMessage && chatSetting) {
+    if (chatSetting) {
       addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
     }
   }, 500);
@@ -190,7 +195,7 @@ const handleNormalResponse = (
   chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
-  showRatingMessage: boolean
+  resetShowRatingMessage: boolean
 ) => {
   if (!question.answer) return;
   
@@ -208,7 +213,7 @@ const handleNormalResponse = (
   
   setMessages(prev => [...prev, answerMessage]);
   
-  if (currentConversation.state === 'unmatched' && !showRatingMessage && chatSetting) {
+  if (currentConversation.state === 'unmatched' && chatSetting) {
     setTimeout(() => {
       addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
     }, 1000);
