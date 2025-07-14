@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import { styled } from '@mui/material/styles';
 import { Box, IconButton, TextareaAutosize, Container as MuiContainer } from '@mui/material';
 import { SendButton } from '../../button/send';
@@ -25,6 +25,10 @@ interface MessageInputProps {
   inline?: boolean;
   /** 背景色 */
   backgroundColor?: string
+}
+
+export interface MessageInputRef {
+  focus: () => void;
 }
 
 // 画面下部に固定されるコンテナ
@@ -122,7 +126,7 @@ const MicButton = styled(IconButton)({
  * 画面下部に固定され、上に向かって伸びるメッセージ入力フォームです。
  * 入力欄は自動的に高さが調整され、複数行の入力に対応します。
  */
-export const MessageInput: React.FC<MessageInputProps> = ({
+export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   placeholder = 'メッセージを入力',
   onSend,
   onMicClick,
@@ -133,10 +137,18 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   className = '',
   inline = false,
   backgroundColor
-}) => {
+}, ref) => {
   const [internalValue, setInternalValue] = useState('');
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
   
   const value = controlledValue !== undefined ? controlledValue : internalValue;
+
+  // refを通じてフォーカス機能を公開
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      textAreaRef.current?.focus();
+    }
+  }));
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = event.target.value;
@@ -182,6 +194,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       <FormContainer>
         <InputContainer>
           <StyledTextArea
+            ref={textAreaRef}
             minRows={1}
             maxRows={10}
             value={value}
@@ -218,6 +231,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       {inline ? content : <InnerContainer>{content}</InnerContainer>}
     </Container>
   );
-};
+});
+
+MessageInput.displayName = 'MessageInput';
 
 export default MessageInput;

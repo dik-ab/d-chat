@@ -5,7 +5,7 @@ import { Box, CircularProgress, Alert } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from '../../theme/theme';
 import { Header } from '../header';
-import { MessageInput } from '../input/message';
+import { MessageInput, MessageInputRef } from '../input/message';
 import { UserMessage } from '../message/user';
 import { CompanyMessage } from '../message/company';
 import { LoadingMessage } from '../message/loading';
@@ -44,6 +44,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   const lastUserMessageId = useRef<number | null>(null);
+  const messageInputRef = useRef<MessageInputRef>(null);
 
   // メッセージ要素への参照を設定
   const setMessageRef = (messageId: number) => (el: HTMLDivElement | null) => {
@@ -58,6 +59,15 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       lastUserMessageId.current = latestUserMessage.id;
     }
   }, [messages]);
+
+  // メッセージ送信ハンドラー（フォーカスを戻す処理を追加）
+  const handleSendMessage = (content: string) => {
+    onSendMessage(content);
+    // メッセージ送信後にフォーカスを戻す
+    setTimeout(() => {
+      messageInputRef.current?.focus();
+    }, 100);
+  };
 
   // 通常の自動スクロール（新着メッセージのステータスに基づく）
   useEffect(() => {
@@ -255,8 +265,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             }}
           >
             <MessageInput
+              ref={messageInputRef}
               placeholder="メッセージを入力してください..."
-              onSend={onSendMessage}
+              onSend={handleSendMessage}
               isMicMode={false}
               disabled={isCreatingConversation || isReplying}
               inline={true}
