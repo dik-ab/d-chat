@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, Suspense } from 'react';
+import React, { useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useChat } from '../hooks/useChat';
 import { useMessageHandler } from '../hooks/useMessageHandler';

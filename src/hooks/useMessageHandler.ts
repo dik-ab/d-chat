@@ -79,11 +79,11 @@ export const useMessageHandler = ({
             }
 
             if (currentConversation.state === 'top3' && question.answer.answer_type === 'top3_match' && question.rag_results && question.rag_results.length >= 3) {
-              handleTop3Response(question, currentConversation, chatSetting, setMessages, setShowRatingMessage, false);
+              handleTop3Response(question, currentConversation, chatSetting, setMessages, setShowRatingMessage);
             } else if (currentConversation.state === 'top1' && question.rag_results && question.rag_results.length >= 1) {
-              handleTop1Response(question, currentConversation, chatSetting, setMessages, setShowRatingMessage, false);
+              handleTop1Response(question, currentConversation, chatSetting, setMessages, setShowRatingMessage);
             } else {
-              handleNormalResponse(question, currentConversation, chatSetting, setMessages, setShowRatingMessage, false);
+              handleNormalResponse(question, currentConversation, chatSetting, setMessages, setShowRatingMessage);
             }
             
             setProcessedQuestionIds(prev => new Set([...prev, question.id]));
@@ -101,7 +101,6 @@ const handleTop3Response = (
   chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
-  resetShowRatingMessage: boolean
 ) => {
   
   if (!question.answer || !question.rag_results) return;
@@ -148,7 +147,6 @@ const handleTop1Response = (
   chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
-  resetShowRatingMessage: boolean
 ) => {
   
   if (!question.answer || !question.rag_results || question.rag_results.length === 0) return;
@@ -195,7 +193,6 @@ const handleNormalResponse = (
   chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
-  resetShowRatingMessage: boolean
 ) => {
   if (!question.answer) return;
   
