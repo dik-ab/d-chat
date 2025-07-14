@@ -217,6 +217,14 @@ export const useChat = (identifier: string = 'livepass_test_chatui') => {
     });
   }, [isConversationLoading, conversationData, conversationError]);
 
+  // ポーリング中かどうかを判定
+  const isPolling = useMemo(() => {
+    return currentConversation?.token && accessTokenData?.token && 
+      (currentConversation?.state === 'answer_preparing' || 
+       currentConversation?.state === 'initial' || 
+       currentConversation?.state === 'reply_received');
+  }, [currentConversation?.token, currentConversation?.state, accessTokenData?.token]);
+
   const isLoading = isTokenLoading || isSettingLoading;
   const error = tokenError || settingError;
 
@@ -240,6 +248,7 @@ export const useChat = (identifier: string = 'livepass_test_chatui') => {
     error,
     isCreatingConversation,
     isReplying,
+    isPolling,
     createConversationTrigger,
     fetchConversationTrigger,
     replyToConversationTrigger,

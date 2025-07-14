@@ -65,6 +65,8 @@ function ChatPage() {
         loadingMessageId={chatState.loadingMessageId}
         isCreatingConversation={chatState.isCreatingConversation}
         isReplying={chatState.isReplying}
+        isPolling={chatState.isPolling || false}
+        currentConversation={chatState.currentConversation}
         chatAreaRef={chatAreaRef}
         onSendMessage={handleSendMessage}
         onRating={handleRating}
@@ -87,6 +89,8 @@ export default function Home() {
           loadingMessageId={null}
           isCreatingConversation={false}
           isReplying={false}
+          isPolling={false}
+          currentConversation={null}
           chatAreaRef={{ current: null }}
           onSendMessage={() => {}}
           onRating={() => {}}

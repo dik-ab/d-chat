@@ -5,13 +5,13 @@ import { Box, CircularProgress, Alert } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from '../../theme/theme';
 import { Header } from '../header';
-import { MessageInput } from '../input/message';
+import { MessageInput, MessageInputRef } from '../input/message';
 import { UserMessage } from '../message/user';
 import { CompanyMessage } from '../message/company';
 import { LoadingMessage } from '../message/loading';
 import { ChatBackground } from '../background/chat';
 import { Message } from '../../types/chat';
-import { ChatSetting } from '../../types/api';
+import { ChatSetting, Conversation } from '../../types/api';
 
 interface ChatContainerProps {
   messages: Message[];
@@ -22,6 +22,8 @@ interface ChatContainerProps {
   loadingMessageId: number | null;
   isCreatingConversation: boolean;
   isReplying: boolean;
+  isPolling: boolean;
+  currentConversation: Conversation | null
   chatAreaRef: React.RefObject<HTMLDivElement | null>;
   onSendMessage: (content: string) => void;
   onRating: (ratingType: 'good' | 'bad' | 'none') => void;
@@ -37,6 +39,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   loadingMessageId,
   isCreatingConversation,
   isReplying,
+  isPolling,
+  currentConversation,
   chatAreaRef,
   onSendMessage,
   onRating,
@@ -44,6 +48,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   const lastUserMessageId = useRef<number | null>(null);
+  const messageInputRef = useRef<MessageInputRef>(null);
 
   // メッセージ要素への参照を設定
   const setMessageRef = (messageId: number) => (el: HTMLDivElement | null) => {
@@ -58,6 +63,24 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       lastUserMessageId.current = latestUserMessage.id;
     }
   }, [messages]);
+
+  // メッセージ送信ハンドラー（フォーカスを戻す処理を追加）
+  const handleSendMessage = (content: string) => {
+    onSendMessage(content);
+    // メッセージ送信後にフォーカスを戻す
+    setTimeout(() => {
+      messageInputRef.current?.focus();
+    }, 100);
+  };
+
+  // reply_waiting状態になったときに自動フォーカス
+  useEffect(() => {
+    if (currentConversation?.state === 'reply_waiting') {
+      setTimeout(() => {
+        messageInputRef.current?.focus();
+      }, 200); // 少し長めの遅延でDOM更新を待つ
+    }
+  }, [currentConversation?.state]);
 
   // 通常の自動スクロール（新着メッセージのステータスに基づく）
   useEffect(() => {
@@ -255,10 +278,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             }}
           >
             <MessageInput
+              ref={messageInputRef}
               placeholder="メッセージを入力してください..."
-              onSend={onSendMessage}
+              onSend={handleSendMessage}
               isMicMode={false}
-              disabled={isCreatingConversation || isReplying}
+              disabled={isCreatingConversation || isReplying || isPolling}
               inline={true}
               backgroundColor={chatSetting?.assistant_speech_bubble_color}
             />
