@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useChat } from '../hooks/useChat';
 import { useMessageHandler } from '../hooks/useMessageHandler';
 import { useChatActions } from '../hooks/useChatActions';
 import { ChatContainer } from '../components/chat/ChatContainer';
 
-export default function Home() {
+function ChatPage() {
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   
@@ -60,11 +60,6 @@ export default function Home() {
     }
   }, [chatState.messages]);
 
-  // identifierが取得できた場合のログ出力（デバッグ用）
-  useEffect(() => {
-    console.log('Current identifier:', identifier || 'livepass_test_chatui (default)');
-  }, [identifier]);
-
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
       <ChatContainer
@@ -82,5 +77,30 @@ export default function Home() {
         onCloseChat={handleCloseChat}
       />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
+        <ChatContainer
+          messages={[]}
+          chatSetting={undefined}
+          isLoading={true}
+          error={null}
+          showLoadingMessage={false}
+          loadingMessageId={null}
+          isCreatingConversation={false}
+          isReplying={false}
+          chatAreaRef={{ current: null }}
+          onSendMessage={() => {}}
+          onRating={() => {}}
+          onCloseChat={() => {}}
+        />
+      </div>
+    }>
+      <ChatPage />
+    </Suspense>
   );
 }
