@@ -1,9 +1,9 @@
-name: Deploy to S3 Staging
+name: Deploy to S3 Production
 
 on:
   push:
     branches:
-      - staging
+      - production
 
 jobs:
   deploy:
@@ -30,22 +30,22 @@ jobs:
       - name: Build Next.js app
         run: pnpm build
         env:
-          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL_STG }}
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL_PROD }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STG }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STG }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
           aws-region: ap-northeast-1
 
       - name: Sync files to S3
         run: |
-          aws s3 sync out/ s3://${{ secrets.BUCKET_STG }}/ --delete --cache-control "public, max-age=31536000, immutable" --exclude "*.html"
-          aws s3 sync out/ s3://${{ secrets.BUCKET_STG }}/ --delete --cache-control "public, max-age=0, must-revalidate" --include "*.html"
+          aws s3 sync out/ s3://${{ secrets.BUCKET_PROD }}/ --delete --cache-control "public, max-age=31536000, immutable" --exclude "*.html"
+          aws s3 sync out/ s3://${{ secrets.BUCKET_PROD }}/ --delete --cache-control "public, max-age=0, must-revalidate" --include "*.html"
 
       - name: Deploy notification
         run: |
-          echo "🚀 Deployment completed successfully!"
+          echo "🚀 Production deployment completed successfully!"
           echo "Branch: ${{ github.ref_name }}"
           echo "Commit: ${{ github.sha }}"
