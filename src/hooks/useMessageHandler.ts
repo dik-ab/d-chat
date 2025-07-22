@@ -134,8 +134,32 @@ const handleTop3Response = (
   setTimeout(() => {
     setMessages(prev => [...prev, ...ragMessages]);
     
-    if (chatSetting) {
-      addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+    // related_urlがある場合はリンクメッセージを追加
+    const validRelatedUrl = question.rag_results?.find(ragResult => ragResult.related_url && ragResult.related_url.trim() !== '')?.related_url;
+    if (validRelatedUrl) {
+      setTimeout(() => {
+        const relatedUrlMessage: Message = {
+          id: Date.now() + Math.random() + 100,
+          type: 'company',
+          content: `操作や情報などを詳しく知りたい場合は<a href="${validRelatedUrl}" target="_blank">こちらのページ</a>をご確認ください。`,
+          timestamp: new Date(),
+          conversationStatus: {
+            state: currentConversation.state,
+            token: currentConversation.token,
+            ratingTypeId: currentConversation.rating_type_id
+          }
+        };
+        
+        setMessages(prev => [...prev, relatedUrlMessage]);
+        
+        if (chatSetting) {
+          addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+        }
+      }, 300);
+    } else {
+      if (chatSetting) {
+        addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+      }
     }
   }, 500);
 };
@@ -180,8 +204,32 @@ const handleTop1Response = (
   setTimeout(() => {
     setMessages(prev => [...prev, ragMessage]);
     
-    if (chatSetting) {
-      addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+    // related_urlがある場合はリンクメッセージを追加
+    const validRelatedUrl = question.rag_results?.find(ragResult => ragResult.related_url && ragResult.related_url.trim() !== '')?.related_url;
+    if (validRelatedUrl) {
+      setTimeout(() => {
+        const relatedUrlMessage: Message = {
+          id: Date.now() + Math.random() + 100,
+          type: 'company',
+          content: `操作や情報などを詳しく知りたい場合は<a href="${validRelatedUrl}" target="_blank">こちらのページ</a>をご確認ください。`,
+          timestamp: new Date(),
+          conversationStatus: {
+            state: currentConversation.state,
+            token: currentConversation.token,
+            ratingTypeId: currentConversation.rating_type_id
+          }
+        };
+        
+        setMessages(prev => [...prev, relatedUrlMessage]);
+        
+        if (chatSetting) {
+          addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+        }
+      }, 300);
+    } else {
+      if (chatSetting) {
+        addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+      }
     }
   }, 500);
 };
