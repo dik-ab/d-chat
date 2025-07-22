@@ -36,6 +36,7 @@ export interface Question {
     question: string;
     answer: string;
     score: number;
+    related_url: string
   }>;
 }
 
