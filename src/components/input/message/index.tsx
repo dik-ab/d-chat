@@ -1,6 +1,6 @@
 import React, { useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import { styled } from '@mui/material/styles';
-import { Box, IconButton, TextareaAutosize, Container as MuiContainer } from '@mui/material';
+import { Box, IconButton, TextareaAutosize, Container as MuiContainer, Typography } from '@mui/material';
 import { SendButton } from '../../button/send';
 import { MicIcon } from '../../icon/mic';
 
@@ -67,7 +67,7 @@ const FormContainer = styled(Box)({
 });
 
 // 入力欄コンテナ
-const InputContainer = styled(Box)({
+const InputContainer = styled(Box)({position: 'relative',
   flex: 1,
   borderRadius: '24px',
   backgroundColor: '#F5F5F5',
@@ -127,6 +127,24 @@ const MicButton = styled(IconButton)({
  * 画面下部に固定され、上に向かって伸びるメッセージ入力フォームです。
  * 入力欄は自動的に高さが調整され、複数行の入力に対応します。
  */
+const CharacterCount = styled(Typography)(({ isOverLimit }: { isOverLimit: boolean }) => ({
+  position: 'absolute',
+  right: '12px',
+  bottom: '4px',
+  fontSize: '12px',
+  color: isOverLimit ? '#d32f2f' : '#666666',
+  pointerEvents: 'none',
+}));
+
+const ErrorMessage = styled(Typography)({position: 'absolute',
+  bottom: '-20px',
+  left: '16px',
+  fontSize: '12px',
+  color: '#d32f2f',
+});
+
+const MAX_CHAR_LIMIT = 400;
+
 export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   placeholder = 'メッセージを入力',
   onSend,
@@ -162,7 +180,7 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   };
 
   const handleSend = () => {
-    if (value.trim() && onSend) {
+    if (value.trim() && value.length <= MAX_CHAR_LIMIT && onSend) {
       onSend(value.trim());
       if (controlledValue === undefined) {
         setInternalValue('');
@@ -190,6 +208,9 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
 
   const Container = inline ? InlineContainer : FixedBottomContainer;
 
+  const isOverLimit = value.length > MAX_CHAR_LIMIT;
+  const shouldDisableSend = disabled || !value.trim() || isOverLimit;
+
   const content = (
     <form onSubmit={handleFormSubmit}>
       <FormContainer>
@@ -204,6 +225,14 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
           />
+          <CharacterCount isOverLimit={isOverLimit}>
+            {value.length}/{MAX_CHAR_LIMIT}
+          </CharacterCount>
+          {isOverLimit && (
+            <ErrorMessage>
+              400文字を超えるメッセージは送信できません
+            </ErrorMessage>
+          )}
         </InputContainer>
         <SendButtonContainer>
           {isMicMode ? (
@@ -218,7 +247,7 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
             <SendButton
               backgroundColor={backgroundColor}
               onClick={handleSend}
-              disabled={disabled || !value.trim()}
+              disabled={shouldDisableSend}
               size={44}
             />
           )}

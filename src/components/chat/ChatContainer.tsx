@@ -210,7 +210,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               top: '58px',
               left: 0,
               right: 0,
-              bottom: '64px',
+              bottom: '88px', // メッセージ入力エリア + エラーメッセージ用スペース
               overflowY: 'auto',
               padding: 0,
               display: 'flex',
@@ -267,14 +267,16 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           {/* メッセージ入力フォーム */}
           <Box
             sx={{
-              height: '64px',
+              minHeight: '64px',
+              height: 'auto',
               flexShrink: 0,
               position: 'absolute',
               bottom: 0,
               left: 0,
               right: 0,
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              zIndex: 10
+              zIndex: 10,
+              paddingBottom: '24px' // エラーメッセージ用のスペース
             }}
           >
             <MessageInput
