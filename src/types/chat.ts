@@ -1,6 +1,6 @@
 export interface Message {
   id: number;
-  type: 'user' | 'company' | 'rating';
+  type: 'user' | 'company' | 'rating' | 'separator';
   content: string;
   timestamp: Date;
   isRatingMessage?: boolean;
