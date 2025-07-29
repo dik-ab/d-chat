@@ -9,6 +9,7 @@ import { MessageInput, MessageInputRef } from '../input/message';
 import { UserMessage } from '../message/user';
 import { CompanyMessage } from '../message/company';
 import { LoadingMessage } from '../message/loading';
+import { SeparatorMessage } from '../message/separator';
 import { ChatBackground } from '../background/chat';
 import { Message } from '../../types/chat';
 import { ChatSetting, Conversation } from '../../types/api';
@@ -240,6 +241,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                   <UserMessage 
                     message={message.content}
                     backgroundColor={chatSetting?.user_speech_bubble_color}
+                  />
+                ) : message.type === 'separator' ? (
+                  <SeparatorMessage 
+                    message={message}
                   />
                 ) : message.id === loadingMessageId && showLoadingMessage ? (
                   <LoadingMessage 
