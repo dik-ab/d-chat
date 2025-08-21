@@ -165,27 +165,26 @@ const handleTop3Response = (
     
     setMessages(prev => [...prev, ...allMessages]);
     
-    // 各回答に対応するrelated_urlを処理
-    const relatedUrlMessages: Message[] = [];
-    ragResults.forEach((ragResult, index) => {
-      if (ragResult.related_url && ragResult.related_url.trim() !== '') {
-        relatedUrlMessages.push({
-          id: Date.now() + Math.random() + 200 + index,
+    // 最初の有効なrelated_urlを見つけて1つだけメッセージを表示
+    const firstValidRelatedUrl = ragResults.find(ragResult => 
+      ragResult.related_url && ragResult.related_url.trim() !== ''
+    )?.related_url;
+    
+    if (firstValidRelatedUrl) {
+      setTimeout(() => {
+        const relatedUrlMessage: Message = {
+          id: Date.now() + Math.random() + 200,
           type: 'company',
-          content: `操作や情報などを詳しく知りたい場合は<a href="${ragResult.related_url}" target="_blank">こちらのページ</a>をご確認ください。`,
+          content: `操作や情報などを詳しく知りたい場合は<a href="${firstValidRelatedUrl}" target="_blank">こちらのページ</a>をご確認ください。`,
           timestamp: new Date(),
           conversationStatus: {
             state: currentConversation.state,
             token: currentConversation.token,
             ratingTypeId: currentConversation.rating_type_id
           }
-        });
-      }
-    });
-    
-    if (relatedUrlMessages.length > 0) {
-      setTimeout(() => {
-        setMessages(prev => [...prev, ...relatedUrlMessages]);
+        };
+        
+        setMessages(prev => [...prev, relatedUrlMessage]);
         
         if (chatSetting) {
           addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
