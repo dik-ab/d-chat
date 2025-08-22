@@ -148,13 +148,12 @@ const handleTop3Response = (
   };
   
   const ragResults = question.rag_results.slice(0, 3);
-  const ragMessages: Message[] = [];
-  const separatorMessages: Message[] = [];
+  const allMessages: Message[] = [];
   
   ragResults.forEach((ragResult, index) => {
     // 2件目以降の回答の前に区切り線メッセージを追加
     if (index > 0) {
-      separatorMessages.push({
+      allMessages.push({
         id: Date.now() + Math.random() + index * 100,
         type: 'separator' as const,
         content: `------ ${index + 1}件目の回答 ------`,
@@ -168,7 +167,7 @@ const handleTop3Response = (
     }
     
     // 回答メッセージ
-    ragMessages.push({
+    allMessages.push({
       id: Date.now() + Math.random() + index + 1,
       type: 'company' as const,
       content: ragResult.answer,
@@ -179,51 +178,33 @@ const handleTop3Response = (
         ratingTypeId: currentConversation.rating_type_id
       }
     });
+    
+    // related_urlがある場合は、その回答の直後にリンクメッセージを追加
+    if (ragResult.related_url && ragResult.related_url.trim() !== '') {
+      allMessages.push({
+        id: Date.now() + Math.random() + index + 1000,
+        type: 'company' as const,
+        content: `操作や情報などを詳しく知りたい場合は<a href="${ragResult.related_url}" target="_blank">こちらのページ</a>をご確認ください。`,
+        timestamp: new Date(),
+        conversationStatus: {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
+        }
+      });
+    }
   });
   
   setMessages(prev => [...prev, firstMessage]);
   
   setTimeout(() => {
-    // 区切り線と回答を交互に追加
-    const allMessages: Message[] = [];
-    ragMessages.forEach((ragMessage, index) => {
-      if (index > 0 && separatorMessages[index - 1]) {
-        allMessages.push(separatorMessages[index - 1]);
-      }
-      allMessages.push(ragMessage);
-    });
-    
     setMessages(prev => [...prev, ...allMessages]);
     
-    // 最初の有効なrelated_urlを見つけて1つだけメッセージを表示
-    const firstValidRelatedUrl = ragResults.find(ragResult => 
-      ragResult.related_url && ragResult.related_url.trim() !== ''
-    )?.related_url;
-    
-    if (firstValidRelatedUrl) {
+    // 結果メッセージと評価メッセージを追加
+    if (chatSetting) {
       setTimeout(() => {
-        const relatedUrlMessage: Message = {
-          id: Date.now() + Math.random() + 200,
-          type: 'company',
-          content: `操作や情報などを詳しく知りたい場合は<a href="${firstValidRelatedUrl}" target="_blank">こちらのページ</a>をご確認ください。`,
-          timestamp: new Date(),
-          conversationStatus: {
-            state: currentConversation.state,
-            token: currentConversation.token,
-            ratingTypeId: currentConversation.rating_type_id
-          }
-        };
-        
-        setMessages(prev => [...prev, relatedUrlMessage]);
-        
-        if (chatSetting) {
-          addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
-        }
-      }, 300);
-    } else {
-      if (chatSetting) {
         addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
-      }
+      }, 300);
     }
   }, 500);
 };
@@ -266,34 +247,31 @@ const handleTop1Response = (
   setMessages(prev => [...prev, firstMessage]);
   
   setTimeout(() => {
-    setMessages(prev => [...prev, ragMessage]);
+    const messagesToAdd: Message[] = [ragMessage];
     
     // related_urlがある場合はリンクメッセージを追加
-    const validRelatedUrl = question.rag_results?.find(ragResult => ragResult.related_url && ragResult.related_url.trim() !== '')?.related_url;
-    if (validRelatedUrl) {
-      setTimeout(() => {
-        const relatedUrlMessage: Message = {
-          id: Date.now() + Math.random() + 100,
-          type: 'company',
-          content: `操作や情報などを詳しく知りたい場合は<a href="${validRelatedUrl}" target="_blank">こちらのページ</a>をご確認ください。`,
-          timestamp: new Date(),
-          conversationStatus: {
-            state: currentConversation.state,
-            token: currentConversation.token,
-            ratingTypeId: currentConversation.rating_type_id
-          }
-        };
-        
-        setMessages(prev => [...prev, relatedUrlMessage]);
-        
-        if (chatSetting) {
-          addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+    if (question.rag_results?.[0].related_url && question.rag_results[0].related_url.trim() !== '') {
+      const relatedUrlMessage: Message = {
+        id: Date.now() + Math.random() + 100,
+        type: 'company',
+        content: `操作や情報などを詳しく知りたい場合は<a href="${question.rag_results[0].related_url}" target="_blank">こちらのページ</a>をご確認ください。`,
+        timestamp: new Date(),
+        conversationStatus: {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
         }
-      }, 300);
-    } else {
-      if (chatSetting) {
+      };
+      messagesToAdd.push(relatedUrlMessage);
+    }
+    
+    setMessages(prev => [...prev, ...messagesToAdd]);
+    
+    // 結果メッセージと評価メッセージを追加
+    if (chatSetting) {
+      setTimeout(() => {
         addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
-      }
+      }, 300);
     }
   }, 500);
 };
