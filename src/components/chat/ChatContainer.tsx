@@ -289,7 +289,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               placeholder="メッセージを入力してください..."
               onSend={handleSendMessage}
               isMicMode={false}
-              disabled={isCreatingConversation || isReplying || isPolling}
+              disabled={isCreatingConversation || isReplying || isPolling || chatSetting?.monthly_limit_exceeded}
               inline={true}
               backgroundColor={chatSetting?.assistant_speech_bubble_color}
             />
