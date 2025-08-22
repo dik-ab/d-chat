@@ -2,7 +2,7 @@
 
 import { Message } from '@/types/chat';
 import { rateConversation } from '../lib/api';
-import { Conversation, AccessTokenResponse } from '../types/api';
+import { Conversation, AccessTokenResponse, ChatSetting } from '../types/api';
 
 interface UseChatActionsProps {
   identifier: string;
@@ -20,6 +20,7 @@ interface UseChatActionsProps {
   fetchConversationTrigger: (arg: { token: string }) => Promise<Conversation>;
   replyToConversationTrigger: (arg: { token: string; content: string }) => Promise<Conversation>;
   forceStartPolling: () => void;
+  chatSetting: ChatSetting | undefined;
 }
 
 export const useChatActions = ({
@@ -37,9 +38,44 @@ export const useChatActions = ({
   createConversationTrigger,
   replyToConversationTrigger,
   forceStartPolling,
+  chatSetting,
 }: UseChatActionsProps) => {
   const handleSendMessage = async (content: string) => {
-    if (!accessTokenData?.token || isCreatingConversation || isReplying) {
+    if (!accessTokenData?.token || isCreatingConversation || isReplying || chatSetting?.monthly_limit_exceeded) {
+      return;
+    }
+    
+    // chat_availableがfalseの場合の処理
+    if (chatSetting && !chatSetting.chat_available) {
+      const userMessage: Message = {
+        id: Date.now(),
+        type: 'user',
+        content,
+        timestamp: new Date(),
+        conversationStatus: currentConversation ? {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
+        } : {
+          state: 'initial'
+        }
+      };
+      
+      const busyMessage: Message = {
+        id: Date.now() + 1,
+        type: 'company',
+        content: 'ただいまお問い合わせが大変混雑しております。申し訳ありませんが30秒ほどお待ちいただき、再度質問をしていただけますでしょうか。',
+        timestamp: new Date(),
+        conversationStatus: currentConversation ? {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
+        } : {
+          state: 'initial'
+        }
+      };
+      
+      setMessages(prev => [...prev, userMessage, busyMessage]);
       return;
     }
 
