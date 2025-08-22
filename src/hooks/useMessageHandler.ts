@@ -40,16 +40,46 @@ export const useMessageHandler = ({
   // Chat設定が取得できたら初期メッセージを表示
   useEffect(() => {
     if (chatSetting && messages.length === 0) {
-      const welcomeMessage: Message = {
-        id: Date.now(),
-        type: 'company',
-        content: chatSetting.welcome_message,
-        timestamp: new Date(),
-        conversationStatus: {
-          state: 'initial'
+      // 月次制限に達している場合
+      if (chatSetting.monthly_limit_exceeded) {
+        const limitMessages: Message[] = [
+          {
+            id: Date.now(),
+            type: 'company',
+            content: chatSetting.conversation_monthly_limit_message,
+            timestamp: new Date(),
+            conversationStatus: {
+              state: 'initial'
+            }
+          }
+        ];
+        
+        // URLがある場合は追加
+        if (chatSetting.conversation_monthly_limit_url) {
+          limitMessages.push({
+            id: Date.now() + 1,
+            type: 'company',
+            content: `<a href="${chatSetting.conversation_monthly_limit_url}" target="_blank">詳細はこちら</a>`,
+            timestamp: new Date(),
+            conversationStatus: {
+              state: 'initial'
+            }
+          });
         }
-      };
-      setMessages([welcomeMessage]);
+        
+        setMessages(limitMessages);
+      } else {
+        const welcomeMessage: Message = {
+          id: Date.now(),
+          type: 'company',
+          content: chatSetting.welcome_message,
+          timestamp: new Date(),
+          conversationStatus: {
+            state: 'initial'
+          }
+        };
+        setMessages([welcomeMessage]);
+      }
     }
   }, [chatSetting, messages.length, setMessages]);
 
@@ -314,6 +344,11 @@ const addResultAndRatingMessages = (
     let messageContent = resultMessage;
     if (currentConversation.contact_page_url) {
       messageContent += `\n\n<a href="${currentConversation.contact_page_url}" target="_blank">問い合わせページはこちら</a>`;
+    }
+    
+    // お問い合わせIDを追加
+    if (currentConversation.cid) {
+      messageContent += `\n\n\n（お問い合わせID: ${currentConversation.cid}）`;
     }
     
     const resultMessageObj: Message = {
