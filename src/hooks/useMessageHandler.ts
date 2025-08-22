@@ -342,13 +342,15 @@ const addResultAndRatingMessages = (
       : chatSetting.matched_message;
     
     let messageContent = resultMessage;
-    if (currentConversation.contact_page_url) {
-      messageContent += `\n\n<a href="${currentConversation.contact_page_url}" target="_blank">問い合わせページはこちら</a>`;
+    
+    // お問い合わせIDを追加（固定文言の後に1行空けて表示）
+    if (currentConversation.cid) {
+      messageContent += `\n\n（お問い合わせID: ${currentConversation.cid}）`;
     }
     
-    // お問い合わせIDを追加
-    if (currentConversation.cid) {
-      messageContent += `\n\n\n（お問い合わせID: ${currentConversation.cid}）`;
+    // お問い合わせURLをその下に表示
+    if (currentConversation.contact_page_url) {
+      messageContent += `\n<a href="${currentConversation.contact_page_url}" target="_blank">問い合わせページはこちら</a>`;
     }
     
     const resultMessageObj: Message = {
