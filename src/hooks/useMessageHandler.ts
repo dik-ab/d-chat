@@ -323,7 +323,7 @@ const addResultAndRatingMessages = (
     
     // お問い合わせIDを追加（固定文言の後に1行空けて表示）
     if (currentConversation.cid) {
-      messageContent += `\n\n（お問い合わせID: ${currentConversation.cid}）`;
+      messageContent += `\n\n<span style="font-size: 12px; white-space: nowrap;">お問い合わせID: ${currentConversation.cid}</span>`;
     }
     
     // お問い合わせURLをその下に表示
