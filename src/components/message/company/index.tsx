@@ -74,49 +74,77 @@ const MessageText = styled(Typography)(() => ({
   },
 }));
 
-// HTMLの<a>タグを解析してReactコンポーネントに変換する関数
+// HTMLの<a>タグと<span>タグを解析してReactコンポーネントに変換する関数
 const parseMessageWithLinks = (message: string): React.ReactNode => {
-  // <a>タグを含むHTMLを解析する正規表現
-  const linkRegex = /<a\s+([^>]*?)>(.*?)<\/a>/gi;
+  // <a>タグと<span>タグを含むHTMLを解析する正規表現
+  const htmlRegex = /<(a|span)\s+([^>]*?)>(.*?)<\/\1>/gi;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
 
-  while ((match = linkRegex.exec(message)) !== null) {
-    // リンクの前のテキストを追加
+  while ((match = htmlRegex.exec(message)) !== null) {
+    // タグの前のテキストを追加
     if (match.index > lastIndex) {
       parts.push(message.substring(lastIndex, match.index));
     }
 
-    // href属性を抽出
-    const attributes = match[1];
-    const linkText = match[2];
-    const hrefMatch = attributes.match(/href\s*=\s*["']([^"']*?)["']/i);
-    const href = hrefMatch ? hrefMatch[1] : '#';
+    const tagName = match[1].toLowerCase();
+    const attributes = match[2];
+    const content = match[3];
 
-    // target属性を抽出（デフォルトは_blank）
-    const targetMatch = attributes.match(/target\s*=\s*["']([^"']*?)["']/i);
-    const target = targetMatch ? targetMatch[1] : '_blank';
+    if (tagName === 'a') {
+      // href属性を抽出
+      const hrefMatch = attributes.match(/href\s*=\s*["']([^"']*?)["']/i);
+      const href = hrefMatch ? hrefMatch[1] : '#';
 
-    // Linkコンポーネントを作成
-    parts.push(
-      <Link
-        key={`link-${match.index}`}
-        href={href}
-        target={target}
-        rel={target === '_blank' ? 'noopener noreferrer' : undefined}
-        sx={{
-          color: 'inherit',
-          textDecoration: 'underline',
-          '&:hover': {
+      // target属性を抽出（デフォルトは_blank）
+      const targetMatch = attributes.match(/target\s*=\s*["']([^"']*?)["']/i);
+      const target = targetMatch ? targetMatch[1] : '_blank';
+
+      // Linkコンポーネントを作成
+      parts.push(
+        <Link
+          key={`link-${match.index}`}
+          href={href}
+          target={target}
+          rel={target === '_blank' ? 'noopener noreferrer' : undefined}
+          sx={{
+            color: 'inherit',
             textDecoration: 'underline',
-            opacity: 0.8,
-          },
-        }}
-      >
-        {linkText}
-      </Link>
-    );
+            '&:hover': {
+              textDecoration: 'underline',
+              opacity: 0.8,
+            },
+          }}
+        >
+          {content}
+        </Link>
+      );
+    } else if (tagName === 'span') {
+      // style属性を抽出
+      const styleMatch = attributes.match(/style\s*=\s*["']([^"']*?)["']/i);
+      const styleString = styleMatch ? styleMatch[1] : '';
+      
+      // スタイル文字列をオブジェクトに変換
+      const styleObj: React.CSSProperties = {};
+      if (styleString) {
+        styleString.split(';').forEach(style => {
+          const [property, value] = style.split(':').map(s => s.trim());
+          if (property && value) {
+            // kebab-caseをcamelCaseに変換
+            const camelProperty = property.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+            styleObj[camelProperty as keyof React.CSSProperties] = value;
+          }
+        });
+      }
+
+      // spanコンポーネントを作成
+      parts.push(
+        <span key={`span-${match.index}`} style={styleObj}>
+          {content}
+        </span>
+      );
+    }
 
     lastIndex = match.index + match[0].length;
   }
