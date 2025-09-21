@@ -14,13 +14,13 @@ interface UserMessageProps {
 const StyledUserMessage = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'backgroundColor',
 })<{ backgroundColor: string }>(({ backgroundColor }) => ({
-  width: '228px',
+  width: 'auto',
+  maxWidth: '80%', // 画面幅の80%を最大幅に
   backgroundColor: backgroundColor,
   borderRadius: '32px',
   padding: '16px',
-  display: 'flex',
+  display: 'inline-flex',
   alignItems: 'center',
-  marginLeft: 'auto', // 右寄せ
   marginBottom: '8px',
   boxSizing: 'border-box',
 }));
@@ -42,7 +42,7 @@ const MessageText = styled(Typography)(() => ({
  * 
  * 仕様:
  * - 背景色: #D2E5DE
- * - 幅: 228px
+ * - 幅: 100%（フルワイド）
  * - 高さ: コンテンツに応じて自動調整
  * - border-radius: 32px
  * - padding: 16px

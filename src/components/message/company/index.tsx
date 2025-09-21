@@ -35,7 +35,8 @@ const MessageBubble = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'bgColor',
 })<{ bgColor: string }>(({ bgColor }) => ({
   position: 'relative',
-  width: '228px',
+  width: 'auto',
+  maxWidth: '100%',
   backgroundColor: bgColor,
   borderRadius: '32px',
   padding: '16px',
@@ -175,7 +176,7 @@ const IconImage = styled('img')(() => ({
  * - 背景色: ChatSettingから取得
  * - アイコン: ChatSettingのURLから取得
  * - テキスト色: 白
- * - 幅: 228px
+ * - 幅: 100%（フルワイド）
  * - 高さ: コンテンツに応じて自動調整
  * - border-radius: 32px
  * - padding: 16px

@@ -238,10 +238,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                 sx={{ width: '100%', padding: '4px 8px' }}
               >
                 {message.type === 'user' ? (
-                  <UserMessage 
-                    message={message.content}
-                    backgroundColor={chatSetting?.user_speech_bubble_color}
-                  />
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                    <UserMessage 
+                      message={message.content}
+                      backgroundColor={chatSetting?.user_speech_bubble_color}
+                    />
+                  </Box>
                 ) : message.type === 'separator' ? (
                   <SeparatorMessage 
                     message={message}
