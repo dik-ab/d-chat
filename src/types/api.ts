@@ -35,6 +35,10 @@ export interface Question {
     id: number;
     content: string;
     answer_type: 'top1_match' | 'top3_match' | 'additional' | 'unmatched';
+    options?: Array<{
+      content: string;
+      simple_content: string;
+    }>;
   };
   rag_results?: Array<{
     question: string;

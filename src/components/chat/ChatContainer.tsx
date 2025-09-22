@@ -10,6 +10,7 @@ import { UserMessage } from '../message/user';
 import { CompanyMessage } from '../message/company';
 import { LoadingMessage } from '../message/loading';
 import { SeparatorMessage } from '../message/separator';
+import { OptionsMessage } from '../message/options';
 import { ChatBackground } from '../background/chat';
 import { Message } from '../../types/chat';
 import { ChatSetting, Conversation } from '../../types/api';
@@ -72,6 +73,26 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     setTimeout(() => {
       messageInputRef.current?.focus();
     }, 100);
+  };
+
+  // オプションがクリックされた時のハンドラー
+  const handleOptionClick = (content: string) => {
+    if (messageInputRef.current && messageInputRef.current.textAreaRef) {
+      const textArea = messageInputRef.current.textAreaRef;
+      const start = textArea.selectionStart || 0;
+      const end = textArea.selectionEnd || 0;
+      const currentValue = messageInputRef.current.getValue();
+      
+      // カーソル位置に挿入
+      const newValue = currentValue.substring(0, start) + content + currentValue.substring(end);
+      messageInputRef.current.setValue(newValue);
+      
+      // カーソル位置を更新
+      setTimeout(() => {
+        textArea.selectionStart = textArea.selectionEnd = start + content.length;
+        messageInputRef.current?.focus();
+      }, 0);
+    }
   };
 
   // reply_waiting状態になったときに自動フォーカス
@@ -252,6 +273,14 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                   <LoadingMessage 
                     backgroundColor={chatSetting?.assistant_speech_bubble_color}
                     iconUrl={chatSetting?.assistant_icon_url}
+                  />
+                ) : message.type === 'options' && message.optionsData ? (
+                  <OptionsMessage
+                    options={message.optionsData.options}
+                    onOptionClick={handleOptionClick}
+                    iconUrl={chatSetting?.assistant_icon_url}
+                    backgroundColor={chatSetting?.assistant_speech_bubble_color}
+                    disabled={isCreatingConversation || isReplying}
                   />
                 ) : (
                   <CompanyMessage 
