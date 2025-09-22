@@ -12,6 +12,7 @@ import { LoadingMessage } from '../message/loading';
 import { SeparatorMessage } from '../message/separator';
 import { OptionsMessage } from '../message/options';
 import { ChatBackground } from '../background/chat';
+import { VideoBackground } from '../background/video';
 import { Message } from '../../types/chat';
 import { ChatSetting, Conversation } from '../../types/api';
 
@@ -51,6 +52,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   const lastUserMessageId = useRef<number | null>(null);
   const messageInputRef = useRef<MessageInputRef>(null);
+
+  // ユーザーメッセージが存在するかチェック
+  const hasUserMessage = messages.some(msg => msg.type === 'user');
 
   // メッセージ要素への参照を設定
   const setMessageRef = (messageId: number) => (el: HTMLDivElement | null) => {
@@ -232,7 +236,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               top: '58px',
               left: 0,
               right: 0,
-              bottom: '88px', // メッセージ入力エリア + エラーメッセージ用スペース
+              bottom: '64px', // メッセージ入力エリアの高さ
               overflowY: 'auto',
               padding: 0,
               display: 'flex',
@@ -312,7 +316,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               right: 0,
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               zIndex: 10,
-              paddingBottom: '24px' // エラーメッセージ用のスペース
             }}
           >
             <MessageInput
@@ -346,6 +349,14 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               </Box>
             )}
           </Box>
+
+          {/* 動画オーバーレイ（ユーザーメッセージがない場合のみ表示） */}
+          {!hasUserMessage && chatSetting?.bg_movie_url && chatSetting?.bg_movie_bubble_message && (
+            <VideoBackground
+              videoUrl={chatSetting.bg_movie_url}
+              bubbleMessage={chatSetting.bg_movie_bubble_message}
+            />
+          )}
         </ChatBackground>
       </Box>
     </ThemeProvider>
