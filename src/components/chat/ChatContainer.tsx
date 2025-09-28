@@ -10,7 +10,9 @@ import { UserMessage } from '../message/user';
 import { CompanyMessage } from '../message/company';
 import { LoadingMessage } from '../message/loading';
 import { SeparatorMessage } from '../message/separator';
+import { OptionsMessage } from '../message/options';
 import { ChatBackground } from '../background/chat';
+import { VideoBackground } from '../background/video';
 import { Message } from '../../types/chat';
 import { ChatSetting, Conversation } from '../../types/api';
 
@@ -51,6 +53,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const lastUserMessageId = useRef<number | null>(null);
   const messageInputRef = useRef<MessageInputRef>(null);
 
+  // ユーザーメッセージが存在するかチェック
+  const hasUserMessage = messages.some(msg => msg.type === 'user');
+
   // メッセージ要素への参照を設定
   const setMessageRef = (messageId: number) => (el: HTMLDivElement | null) => {
     messageRefs.current[messageId] = el;
@@ -72,6 +77,26 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     setTimeout(() => {
       messageInputRef.current?.focus();
     }, 100);
+  };
+
+  // オプションがクリックされた時のハンドラー
+  const handleOptionClick = (content: string) => {
+    if (messageInputRef.current && messageInputRef.current.textAreaRef) {
+      const textArea = messageInputRef.current.textAreaRef;
+      const start = textArea.selectionStart || 0;
+      const end = textArea.selectionEnd || 0;
+      const currentValue = messageInputRef.current.getValue();
+      
+      // カーソル位置に挿入
+      const newValue = currentValue.substring(0, start) + content + currentValue.substring(end);
+      messageInputRef.current.setValue(newValue);
+      
+      // カーソル位置を更新
+      setTimeout(() => {
+        textArea.selectionStart = textArea.selectionEnd = start + content.length;
+        messageInputRef.current?.focus();
+      }, 0);
+    }
   };
 
   // reply_waiting状態になったときに自動フォーカス
@@ -118,7 +143,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
   // ローディング中の表示
-  if (isLoading) {
+  if (isLoading || !chatSetting) {
     return (
       <ThemeProvider theme={theme}>
         <Box
@@ -165,6 +190,96 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     );
   }
 
+  // 動画オーバーレイの表示判定
+  const showVideoOverlay = !hasUserMessage && chatSetting.bg_movie_url && chatSetting.bg_movie_bubble_message;
+
+  // 動画表示モードの場合は、専用のレイアウトを返す
+  if (showVideoOverlay) {
+    return (
+      <ThemeProvider theme={theme}>
+        <Box
+          sx={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+            overflow: 'hidden',
+            margin: 0,
+            padding: 0
+          }}
+        >
+          {/* ヘッダー */}
+          <Box
+            sx={{
+              height: '58px',
+              flexShrink: 0,
+              zIndex: 10,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0
+            }}
+          >
+            <Header
+              title={chatSetting?.header_label || "カスタマーサポート"}
+              backgroundColor={chatSetting?.header_bg_color || '#FFFFFF'}
+              onClose={onCloseChat}
+            />
+          </Box>
+
+          {/* 動画背景 */}
+          <VideoBackground
+            videoUrl={chatSetting.bg_movie_url!}
+            bubbleMessage={chatSetting.bg_movie_bubble_message!}
+          />
+
+          {/* メッセージ入力フォーム */}
+          <Box
+            sx={{
+              minHeight: '64px',
+              height: 'auto',
+              flexShrink: 0,
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 10,
+              backgroundColor: '#FFFFFF',
+              borderTop: '1px solid #E0E0E0',
+              padding: '8px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}
+          >
+            <MessageInput 
+              ref={messageInputRef}
+              onSend={handleSendMessage}
+              disabled={isCreatingConversation || isReplying}
+              backgroundColor={chatSetting?.user_speech_bubble_color}
+            />
+            {(isCreatingConversation || isReplying) && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  color: 'text.secondary',
+                  fontSize: '14px'
+                }}
+              >
+                <CircularProgress size={16} />
+                {isCreatingConversation ? '送信中...' : '返信中...'}
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
+  // 通常のチャット表示
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -204,33 +319,33 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           </Box>
 
           {/* チャットエリア */}
-          <Box
-            ref={chatAreaRef}
-            sx={{
-              position: 'absolute',
-              top: '58px',
-              left: 0,
-              right: 0,
-              bottom: '88px', // メッセージ入力エリア + エラーメッセージ用スペース
-              overflowY: 'auto',
-              padding: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              '&::-webkit-scrollbar': {
-                width: '4px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: 'transparent',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: 'rgba(0,0,0,0.2)',
-                borderRadius: '2px',
-              },
-              '&::-webkit-scrollbar-thumb:hover': {
-                background: 'rgba(0,0,0,0.3)',
-              },
-            }}
-          >
+            <Box
+              ref={chatAreaRef}
+              sx={{
+                position: 'absolute',
+                top: '58px',
+                left: 0,
+                right: 0,
+                bottom: '64px', // メッセージ入力エリアの高さ
+                overflowY: 'auto',
+                padding: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                '&::-webkit-scrollbar': {
+                  width: '4px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: 'transparent',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: 'rgba(0,0,0,0.2)',
+                  borderRadius: '2px',
+                },
+                '&::-webkit-scrollbar-thumb:hover': {
+                  background: 'rgba(0,0,0,0.3)',
+                },
+              }}
+            >
             {messages.map((message) => (
               <Box 
                 key={message.id} 
@@ -238,10 +353,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                 sx={{ width: '100%', padding: '4px 8px' }}
               >
                 {message.type === 'user' ? (
-                  <UserMessage 
-                    message={message.content}
-                    backgroundColor={chatSetting?.user_speech_bubble_color}
-                  />
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                    <UserMessage 
+                      message={message.content}
+                      backgroundColor={chatSetting?.user_speech_bubble_color}
+                    />
+                  </Box>
                 ) : message.type === 'separator' ? (
                   <SeparatorMessage 
                     message={message}
@@ -250,6 +367,14 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                   <LoadingMessage 
                     backgroundColor={chatSetting?.assistant_speech_bubble_color}
                     iconUrl={chatSetting?.assistant_icon_url}
+                  />
+                ) : message.type === 'options' && message.optionsData ? (
+                  <OptionsMessage
+                    options={message.optionsData.options}
+                    onOptionClick={handleOptionClick}
+                    iconUrl={chatSetting?.assistant_icon_url}
+                    backgroundColor={chatSetting?.assistant_speech_bubble_color}
+                    disabled={isCreatingConversation || isReplying}
                   />
                 ) : (
                   <CompanyMessage 
@@ -267,7 +392,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                 )}
               </Box>
             ))}
-          </Box>
+            </Box>
 
           {/* メッセージ入力フォーム */}
           <Box
@@ -281,7 +406,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               right: 0,
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               zIndex: 10,
-              paddingBottom: '24px' // エラーメッセージ用のスペース
             }}
           >
             <MessageInput
@@ -315,6 +439,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               </Box>
             )}
           </Box>
+
         </ChatBackground>
       </Box>
     </ThemeProvider>

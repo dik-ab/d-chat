@@ -29,6 +29,9 @@ interface MessageInputProps {
 
 export interface MessageInputRef {
   focus: () => void;
+  getValue: () => string;
+  setValue: (value: string) => void;
+  textAreaRef: HTMLTextAreaElement | null;
 }
 
 // 画面下部に固定されるコンテナ
@@ -166,7 +169,21 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   useImperativeHandle(ref, () => ({
     focus: () => {
       textAreaRef.current?.focus();
-    }
+    },
+    getValue: () => {
+      return value;
+    },
+    setValue: (newValue: string) => {
+      if (controlledValue === undefined) {
+        setInternalValue(newValue);
+      }
+      onChange?.(newValue);
+      // TextAreaの値も更新
+      if (textAreaRef.current) {
+        textAreaRef.current.value = newValue;
+      }
+    },
+    textAreaRef: textAreaRef.current
   }));
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
