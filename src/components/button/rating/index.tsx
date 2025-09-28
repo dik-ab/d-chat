@@ -48,7 +48,7 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
         sx={{
           color: '#FFFFFF',
           lineHeight: 1.5,
-          marginBottom: contactPageUrl ? '12px' : '16px',
+          marginBottom: contactPageUrl ? '8px' : '10px',
           fontSize: '14px',
           fontFamily: '"Noto Sans", sans-serif',
           fontWeight: 500,
@@ -60,7 +60,7 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
 
       {/* 問い合わせページリンク */}
       {contactPageUrl && (
-        <Box sx={{ marginBottom: '16px' }}>
+        <Box sx={{ marginBottom: '10px' }}>
           <Link
             href={contactPageUrl}
             target="_blank"
@@ -87,10 +87,11 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
         sx={{
           color: '#FFFFFF',
           lineHeight: 1.5,
-          marginBottom: '16px',
+          marginBottom: '8px',
           fontSize: '14px',
           fontFamily: '"Noto Sans", sans-serif',
           fontWeight: 500,
+          marginTop: -1
         }}
       >
         お問合せいただきありがとうございました。品質向上のため、よろしければ以下のボタンから評価をお願いいたします。
@@ -102,18 +103,22 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px',
             alignItems: 'center',
+            marginTop: '-4px',
           }}
         >
-          <SurveyButton
-            type="yes"
-            onClick={() => handleRating('good')}
-          />
-          <SurveyButton
-            type="no"
-            onClick={() => handleRating('bad')}
-          />
+          <Box sx={{ marginBottom: '-10px' }}>
+            <SurveyButton
+              type="yes"
+              onClick={() => handleRating('good')}
+            />
+          </Box>
+          <Box sx={{ marginBottom: '-8px' }}>
+            <SurveyButton
+              type="no"
+              onClick={() => handleRating('bad')}
+            />
+          </Box>
         </Box>
       )}
 

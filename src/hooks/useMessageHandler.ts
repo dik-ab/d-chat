@@ -300,6 +300,27 @@ const handleNormalResponse = (
   
   setMessages(prev => [...prev, answerMessage]);
   
+  // オプションがある場合は選択肢メッセージを追加
+  if (question.answer.options && question.answer.options.length > 0) {
+    setTimeout(() => {
+      const optionsMessage: Message = {
+        id: Date.now() + Math.random(),
+        type: 'options',
+        content: '',
+        timestamp: new Date(),
+        optionsData: {
+          options: question.answer!.options!
+        },
+        conversationStatus: {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
+        }
+      };
+      setMessages(prev => [...prev, optionsMessage]);
+    }, 300);
+  }
+  
   if (currentConversation.state === 'unmatched' && chatSetting) {
     setTimeout(() => {
       addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
