@@ -134,7 +134,7 @@ const parseMessageWithLinks = (message: string): React.ReactNode => {
           if (property && value) {
             // kebab-caseをcamelCaseに変換
             const camelProperty = property.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-            (styleObj as any)[camelProperty] = value;
+            (styleObj as Record<string, string>)[camelProperty] = value;
           }
         });
       }
