@@ -230,8 +230,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
           {/* 動画背景 */}
           <VideoBackground
-            videoUrl={chatSetting.bg_movie_url}
-            bubbleMessage={chatSetting.bg_movie_bubble_message}
+            videoUrl={chatSetting.bg_movie_url!}
+            bubbleMessage={chatSetting.bg_movie_bubble_message!}
           />
 
           {/* メッセージ入力フォーム */}
