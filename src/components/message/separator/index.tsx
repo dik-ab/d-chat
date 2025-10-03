@@ -11,11 +11,10 @@ export const SeparatorMessage: React.FC<SeparatorMessageProps> = ({ message }) =
     <Box
       sx={{
         display: 'flex',
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
         alignItems: 'center',
         my: 2,
-        pl: '60px', // paddingLeftに変更して、横スクロールを防ぐ
-        pr: 2,
+        px: 2,
       }}
     >
       <Typography
