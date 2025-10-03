@@ -87,13 +87,16 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       const end = textArea.selectionEnd || 0;
       const currentValue = messageInputRef.current.getValue();
       
+      // 内容に「。」を追加（すでに「。」で終わっていない場合のみ）
+      const contentWithPeriod = content.endsWith('。') ? content : content + '。';
+      
       // カーソル位置に挿入
-      const newValue = currentValue.substring(0, start) + content + currentValue.substring(end);
+      const newValue = currentValue.substring(0, start) + contentWithPeriod + currentValue.substring(end);
       messageInputRef.current.setValue(newValue);
       
       // カーソル位置を更新
       setTimeout(() => {
-        textArea.selectionStart = textArea.selectionEnd = start + content.length;
+        textArea.selectionStart = textArea.selectionEnd = start + contentWithPeriod.length;
         messageInputRef.current?.focus();
       }, 0);
     }
@@ -323,7 +326,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               ref={chatAreaRef}
               sx={{
                 position: 'absolute',
-                top: '58px',
+                top: {
+                  xs: '58px', // モバイル・小画面
+                  sm: '58px', // タブレット
+                  md: '80px', // デスクトップ中
+                  lg: '100px', // デスクトップ大
+                },
                 left: 0,
                 right: 0,
                 bottom: '64px', // メッセージ入力エリアの高さ
@@ -377,18 +385,29 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                     disabled={isCreatingConversation || isReplying}
                   />
                 ) : (
-                  <CompanyMessage 
-                    message={message.content}
-                    backgroundColor={chatSetting?.assistant_speech_bubble_color}
-                    iconUrl={chatSetting?.assistant_icon_url}
-                    ratingData={message.isRatingMessage && message.ratingData ? {
-                      matchedMessage: message.ratingData.matchedMessage,
-                      unmatchedMessage: message.ratingData.unmatchedMessage,
-                      conversationState: message.ratingData.conversationState,
-                      contactPageUrl: message.ratingData.contactPageUrl,
-                      onRating: onRating
-                    } : undefined}
-                  />
+                  <Box sx={{ 
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'flex-start'
+                  }}>
+                    <Box sx={{ 
+                      maxWidth: message.isRatingMessage && message.ratingData ? '320px' : '100%',
+                      width: message.isRatingMessage && message.ratingData ? '320px' : 'auto'
+                    }}>
+                      <CompanyMessage 
+                        message={message.content}
+                        backgroundColor={chatSetting?.assistant_speech_bubble_color}
+                        iconUrl={chatSetting?.assistant_icon_url}
+                        ratingData={message.isRatingMessage && message.ratingData ? {
+                          matchedMessage: message.ratingData.matchedMessage,
+                          unmatchedMessage: message.ratingData.unmatchedMessage,
+                          conversationState: message.ratingData.conversationState,
+                          contactPageUrl: message.ratingData.contactPageUrl,
+                          onRating: onRating
+                        } : undefined}
+                      />
+                    </Box>
+                  </Box>
                 )}
               </Box>
             ))}
