@@ -23,7 +23,7 @@ const VideoContainer = styled(Box)(() => ({
 
 const BubbleWrapper = styled(Box)(() => ({
   position: 'absolute',
-  bottom: 'calc(64px + 67dvh)', // チャット入力欄(64px)の上から10dvhの位置に配置
+  bottom: 'calc(64px + 69dvh)', // チャット入力欄(64px)の上から10dvhの位置に配置
   left: '50%',
   transform: 'translateX(-50%)',
   zIndex: 1,
