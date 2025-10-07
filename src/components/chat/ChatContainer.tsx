@@ -260,7 +260,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               ref={messageInputRef}
               onSend={handleSendMessage}
               disabled={isCreatingConversation || isReplying}
-              backgroundColor={chatSetting?.user_speech_bubble_color}
+              backgroundColor={chatSetting?.assistant_speech_bubble_color}
             />
             {(isCreatingConversation || isReplying) && (
               <Box
