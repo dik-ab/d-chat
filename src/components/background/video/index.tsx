@@ -19,9 +19,9 @@ const VideoContainer = styled(Box)(() => ({
   height: '100%',
   overflow: 'hidden',
   display: 'flex',
-  alignItems: 'flex-start',
+  alignItems: 'flex-end',
   justifyContent: 'center',
-  paddingTop: '15.5vh', // ヘッダーを避けて配置
+  paddingBottom: '76vh', // 画面下部から固定値で配置
   zIndex: 5, // チャットメッセージより上に表示
 }));
 
