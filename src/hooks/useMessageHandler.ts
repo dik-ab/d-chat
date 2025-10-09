@@ -40,16 +40,46 @@ export const useMessageHandler = ({
   // Chat設定が取得できたら初期メッセージを表示
   useEffect(() => {
     if (chatSetting && messages.length === 0) {
-      const welcomeMessage: Message = {
-        id: Date.now(),
-        type: 'company',
-        content: chatSetting.welcome_message,
-        timestamp: new Date(),
-        conversationStatus: {
-          state: 'initial'
+      // 月次制限に達している場合
+      if (chatSetting.monthly_limit_exceeded) {
+        const limitMessages: Message[] = [
+          {
+            id: Date.now(),
+            type: 'company',
+            content: chatSetting.conversation_monthly_limit_message,
+            timestamp: new Date(),
+            conversationStatus: {
+              state: 'initial'
+            }
+          }
+        ];
+        
+        // URLがある場合は追加
+        if (chatSetting.conversation_monthly_limit_url) {
+          limitMessages.push({
+            id: Date.now() + 1,
+            type: 'company',
+            content: `<a href="${chatSetting.conversation_monthly_limit_url}" target="_blank">詳細はこちら</a>`,
+            timestamp: new Date(),
+            conversationStatus: {
+              state: 'initial'
+            }
+          });
         }
-      };
-      setMessages([welcomeMessage]);
+        
+        setMessages(limitMessages);
+      } else {
+        const welcomeMessage: Message = {
+          id: Date.now(),
+          type: 'company',
+          content: chatSetting.welcome_message,
+          timestamp: new Date(),
+          conversationStatus: {
+            state: 'initial'
+          }
+        };
+        setMessages([welcomeMessage]);
+      }
     }
   }, [chatSetting, messages.length, setMessages]);
 
@@ -78,9 +108,9 @@ export const useMessageHandler = ({
               setShowRatingMessage(false);
             }
 
-            if (currentConversation.state === 'top3' && question.answer.answer_type === 'top3_match' && question.rag_results && question.rag_results.length >= 3) {
+            if (currentConversation.state === 'top3' && question.answer.answer_type === 'top3_match' && question.rag_results && question.rag_results.length > 0) {
               handleTop3Response(question, currentConversation, chatSetting, setMessages, setShowRatingMessage);
-            } else if (currentConversation.state === 'top1' && question.rag_results && question.rag_results.length >= 1) {
+            } else if (currentConversation.state === 'top1' && question.answer.answer_type === 'top1_match' && question.rag_results && question.rag_results.length >= 1) {
               handleTop1Response(question, currentConversation, chatSetting, setMessages, setShowRatingMessage);
             } else {
               handleNormalResponse(question, currentConversation, chatSetting, setMessages, setShowRatingMessage);
@@ -117,25 +147,64 @@ const handleTop3Response = (
     }
   };
   
-  const ragMessages: Message[] = question.rag_results.slice(0, 3).map((ragResult, index: number) => ({
-    id: Date.now() + Math.random() + index + 1,
-    type: 'company' as const,
-    content: ragResult.answer,
-    timestamp: new Date(),
-    conversationStatus: {
-      state: currentConversation.state,
-      token: currentConversation.token,
-      ratingTypeId: currentConversation.rating_type_id
+  const ragResults = question.rag_results.slice(0, 3);
+  const allMessages: Message[] = [];
+  
+  ragResults.forEach((ragResult, index) => {
+    // 2件目以降の回答の前に区切り線メッセージを追加
+    if (index > 0) {
+      allMessages.push({
+        id: Date.now() + Math.random() + index * 100,
+        type: 'separator' as const,
+        content: `------ ${index + 1}件目の回答 ------`,
+        timestamp: new Date(),
+        conversationStatus: {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
+        }
+      });
     }
-  }));
+    
+    // 回答メッセージ
+    allMessages.push({
+      id: Date.now() + Math.random() + index + 1,
+      type: 'company' as const,
+      content: ragResult.answer,
+      timestamp: new Date(),
+      conversationStatus: {
+        state: currentConversation.state,
+        token: currentConversation.token,
+        ratingTypeId: currentConversation.rating_type_id
+      }
+    });
+    
+    // related_urlがある場合は、その回答の直後にリンクメッセージを追加
+    if (ragResult.related_url && ragResult.related_url.trim() !== '') {
+      allMessages.push({
+        id: Date.now() + Math.random() + index + 1000,
+        type: 'company' as const,
+        content: `操作や情報などを詳しく知りたい場合は<a href="${ragResult.related_url}" target="_blank">こちらのページ</a>をご確認ください。`,
+        timestamp: new Date(),
+        conversationStatus: {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
+        }
+      });
+    }
+  });
   
   setMessages(prev => [...prev, firstMessage]);
   
   setTimeout(() => {
-    setMessages(prev => [...prev, ...ragMessages]);
+    setMessages(prev => [...prev, ...allMessages]);
     
+    // 結果メッセージと評価メッセージを追加
     if (chatSetting) {
-      addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+      setTimeout(() => {
+        addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+      }, 300);
     }
   }, 500);
 };
@@ -178,10 +247,31 @@ const handleTop1Response = (
   setMessages(prev => [...prev, firstMessage]);
   
   setTimeout(() => {
-    setMessages(prev => [...prev, ragMessage]);
+    const messagesToAdd: Message[] = [ragMessage];
     
+    // related_urlがある場合はリンクメッセージを追加
+    if (question.rag_results?.[0].related_url && question.rag_results[0].related_url.trim() !== '') {
+      const relatedUrlMessage: Message = {
+        id: Date.now() + Math.random() + 100,
+        type: 'company',
+        content: `操作や情報などを詳しく知りたい場合は<a href="${question.rag_results[0].related_url}" target="_blank">こちらのページ</a>をご確認ください。`,
+        timestamp: new Date(),
+        conversationStatus: {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
+        }
+      };
+      messagesToAdd.push(relatedUrlMessage);
+    }
+    
+    setMessages(prev => [...prev, ...messagesToAdd]);
+    
+    // 結果メッセージと評価メッセージを追加
     if (chatSetting) {
-      addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+      setTimeout(() => {
+        addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+      }, 300);
     }
   }, 500);
 };
@@ -210,6 +300,27 @@ const handleNormalResponse = (
   
   setMessages(prev => [...prev, answerMessage]);
   
+  // オプションがある場合は選択肢メッセージを追加
+  if (question.answer.options && question.answer.options.length > 0) {
+    setTimeout(() => {
+      const optionsMessage: Message = {
+        id: Date.now() + Math.random(),
+        type: 'options',
+        content: '',
+        timestamp: new Date(),
+        optionsData: {
+          options: question.answer!.options!
+        },
+        conversationStatus: {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
+        }
+      };
+      setMessages(prev => [...prev, optionsMessage]);
+    }, 300);
+  }
+  
   if (currentConversation.state === 'unmatched' && chatSetting) {
     setTimeout(() => {
       addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
@@ -230,8 +341,15 @@ const addResultAndRatingMessages = (
       : chatSetting.matched_message;
     
     let messageContent = resultMessage;
+    
+    // お問い合わせIDを追加（固定文言の後に1行空けて表示）
+    if (currentConversation.cid) {
+      messageContent += `\n\n<span style="font-size: 12px; white-space: nowrap;">お問い合わせID: ${currentConversation.cid}</span>`;
+    }
+    
+    // お問い合わせURLをその下に表示
     if (currentConversation.contact_page_url) {
-      messageContent += `\n\n<a href="${currentConversation.contact_page_url}" target="_blank">問い合わせページはこちら</a>`;
+      messageContent += `\n<a href="${currentConversation.contact_page_url}" target="_blank">問い合わせページはこちら</a>`;
     }
     
     const resultMessageObj: Message = {

@@ -21,6 +21,12 @@ export interface ChatSetting {
   welcome_message: string;
   matched_message: string;
   unmatched_message: string;
+  conversation_monthly_limit_message: string;
+  conversation_monthly_limit_url: string | null;
+  chat_available: boolean;
+  monthly_limit_exceeded: boolean;
+  bg_movie_url?: string;
+  bg_movie_bubble_message?: string;
 }
 
 // 会話情報の型
@@ -31,16 +37,22 @@ export interface Question {
     id: number;
     content: string;
     answer_type: 'top1_match' | 'top3_match' | 'additional' | 'unmatched';
+    options?: Array<{
+      content: string;
+      simple_content: string;
+    }>;
   };
   rag_results?: Array<{
     question: string;
     answer: string;
     score: number;
+    related_url?: string;
   }>;
 }
 
 export interface Conversation {
   token: string;
+  cid: string;
   state: 'initial' | 'answer_preparing' | 'reply_waiting' | 'reply_received' | 'top1' | 'top3' | 'unmatched' | 'failed';
   rating_type_id: number; // 1: none, 2: good, 3: bad
   questions: Question[];

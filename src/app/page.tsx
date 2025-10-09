@@ -52,6 +52,7 @@ function ChatPage() {
     fetchConversationTrigger: chatState.fetchConversationTrigger,
     replyToConversationTrigger: chatState.replyToConversationTrigger,
     forceStartPolling: chatState.forceStartPolling,
+    chatSetting: chatState.chatSetting,
   });
 
 
