@@ -99,7 +99,7 @@ const OptionText = styled(Typography)(() => ({
 const OptionsFooter = styled(Typography)(() => ({
   fontFamily: '"Noto Sans", sans-serif',
   fontSize: '12px',
-  fontWeight: 400,
+  fontWeight: 700,
   lineHeight: '18px',
   color: '#FFFFFF',
   opacity: 0.8,
@@ -130,7 +130,7 @@ export const OptionsMessage: React.FC<OptionsMessageProps> = ({
     <MessageContainer className={className}>
       <IconImage src={iconUrl} alt="Assistant" />
       <MessageBubble bgColor={backgroundColor}>
-        <OptionsHeader>この中に選択肢はありますか？</OptionsHeader>
+        <OptionsHeader>以下の選択肢の中に該当するものはありますか？</OptionsHeader>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {options.map((option, index) => (
             <OptionButton
@@ -142,7 +142,7 @@ export const OptionsMessage: React.FC<OptionsMessageProps> = ({
             </OptionButton>
           ))}
         </Box>
-        <OptionsFooter>※選択肢にない場合は手入力もできます</OptionsFooter>
+        <OptionsFooter>※該当する選択肢がない場合は手入力もできます</OptionsFooter>
       </MessageBubble>
     </MessageContainer>
   );

@@ -18,11 +18,15 @@ const VideoContainer = styled(Box)(() => ({
   width: '100%',
   height: '100%',
   overflow: 'hidden',
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'center',
-  paddingTop: '15.5vh', // ヘッダーを避けて配置
   zIndex: 5, // チャットメッセージより上に表示
+}));
+
+const BubbleWrapper = styled(Box)(() => ({
+  position: 'absolute',
+  bottom: 'calc(64px + 69dvh)', // チャット入力欄(64px)の上から10dvhの位置に配置
+  left: '50%',
+  transform: 'translateX(-50%)',
+  zIndex: 1,
 }));
 
 const Video = styled('video')(() => ({
@@ -85,9 +89,11 @@ export const VideoBackground: React.FC<VideoBackgroundProps> = ({
       >
         <source src={videoUrl} type="video/mp4" />
       </Video>
-      <BubbleMessage>
-        <BubbleText>{bubbleMessage}</BubbleText>
-      </BubbleMessage>
+      <BubbleWrapper>
+        <BubbleMessage>
+          <BubbleText>{bubbleMessage}</BubbleText>
+        </BubbleMessage>
+      </BubbleWrapper>
     </VideoContainer>
   );
 };
