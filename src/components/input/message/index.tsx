@@ -92,7 +92,7 @@ const StyledTextArea = styled(TextareaAutosize)({
   backgroundColor: 'transparent',
   border: 'none',
   outline: 'none',
-  fontSize: '14px',
+  fontSize: '16px',
   fontFamily: 'inherit',
   paddingTop: '8px',
   paddingBottom: '8px',
