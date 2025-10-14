@@ -5,11 +5,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 // APIエラーハンドリング用のクラス
 export class ApiErrorClass extends Error {
   status?: number;
+  responseBody?: any;
   
-  constructor(message: string, status?: number) {
+  constructor(message: string, status?: number, responseBody?: any) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.responseBody = responseBody;
   }
 }
 
@@ -46,9 +48,17 @@ async function apiRequest<T>(
     });
 
     if (!response.ok) {
+      let errorBody;
+      try {
+        errorBody = await response.json();
+      } catch (e) {
+        errorBody = null;
+      }
+      
       throw new ApiErrorClass(
-        `API request failed: ${response.statusText}`,
-        response.status
+        errorBody?.message || `API request failed: ${response.statusText}`,
+        response.status,
+        errorBody
       );
     }
 

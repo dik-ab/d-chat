@@ -1,7 +1,7 @@
 'use client';
 
 import { Message } from '@/types/chat';
-import { rateConversation } from '../lib/api';
+import { rateConversation, ApiErrorClass } from '../lib/api';
 import { Conversation, AccessTokenResponse, ChatSetting } from '../types/api';
 
 interface UseChatActionsProps {
@@ -152,19 +152,30 @@ export const useChatActions = ({
     } catch (error) {
       console.error('Failed to send message:', error);
       
-      // ローディングメッセージを削除
-      if (showLoadingMessage && loadingMessageId) {
-        setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
-        setShowLoadingMessage(false);
-        setLoadingMessageId(null);
-      }
+      // ローディングメッセージを必ず削除
+      setMessages(prev => prev.filter(msg => msg.id !== loadingId));
+      setShowLoadingMessage(false);
+      setLoadingMessageId(null);
       
       // エラーメッセージを表示
       setTimeout(() => {
+        let errorContent = '申し訳ございません。一時的にサービスがご利用いただけません。しばらく経ってから再度お試しください。';
+        
+        // エラーの種類に応じてメッセージを設定
+        if (error instanceof ApiErrorClass) {
+          if (error.status === 422) {
+            // 不適切なコンテンツ
+            errorContent = 'ご入力内容に制限対象の語句が含まれています。表現を変えてもう一度お試しください。（複数回に渡って制限対象の語句の入力を検知すると、一時的にチャットがご利用いただけなくなります。何卒ご了承ください。）';
+          } else if (error.status === 403) {
+            // ブロックされたアクセス
+            errorContent = '複数回の制限対象の語句の入力を検知しました。一時的にチャット機能を停止中です。1日以上の時間を空けて再度ご質問ください。';
+          }
+        }
+        
         const errorMessage: Message = {
           id: Date.now() + Math.random(),
           type: 'company',
-          content: '申し訳ございません。一時的にサービスがご利用いただけません。しばらく経ってから再度お試しください。',
+          content: errorContent,
           timestamp: new Date(),
           conversationStatus: {
             state: 'failed'
