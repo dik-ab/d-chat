@@ -35,16 +35,17 @@ export interface MessageInputRef {
 }
 
 // 画面下部に固定されるコンテナ
-const FixedBottomContainer = styled(Box)({
+const FixedBottomContainer = styled(Box)<{ hasError?: boolean }>(({ hasError }) => ({
   position: 'fixed',
   bottom: 0,
   left: 0,
   zIndex: 40,
-  minHeight: '64px',
+  minHeight: hasError ? '84px' : '64px',
   width: '100%',
   borderTop: '1px solid #E0E0E0',
   backgroundColor: '#FFFFFF',
-});
+  transition: 'min-height 0.2s ease-in-out',
+}));
 
 // インラインコンテナ（ChatContainer内で使用）
 const InlineContainer = styled(Box)({
@@ -54,13 +55,14 @@ const InlineContainer = styled(Box)({
 });
 
 // 内部コンテナ
-const InnerContainer = styled(MuiContainer)({
+const InnerContainer = styled(MuiContainer)<{ hasError?: boolean }>(({ hasError }) => ({
   maxWidth: '448px', // max-w-md相当
   paddingLeft: '16px',
   paddingRight: '16px',
   paddingTop: '8px',
-  paddingBottom: '8px',
-});
+  paddingBottom: hasError ? '28px' : '8px',
+  transition: 'padding-bottom 0.2s ease-in-out',
+}));
 
 // フォームコンテナ
 const FormContainer = styled(Box)({
@@ -70,7 +72,8 @@ const FormContainer = styled(Box)({
 });
 
 // 入力欄コンテナ
-const InputContainer = styled(Box)({position: 'relative',
+const InputContainer = styled(Box)({
+  position: 'relative',
   flex: 1,
   borderRadius: '24px',
   backgroundColor: '#F5F5F5',
@@ -139,11 +142,13 @@ const CharacterCount = styled(Typography)(({ isOverLimit }: { isOverLimit: boole
   pointerEvents: 'none',
 }));
 
-const ErrorMessage = styled(Typography)({position: 'absolute',
+const ErrorMessage = styled(Typography)({
+  position: 'absolute',
   bottom: '-20px',
   left: '16px',
   fontSize: '12px',
   color: '#d32f2f',
+  whiteSpace: 'nowrap',
 });
 
 const MAX_CHAR_LIMIT = 400;
@@ -274,8 +279,8 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   );
 
   return (
-    <Container className={className}>
-      {inline ? content : <InnerContainer>{content}</InnerContainer>}
+    <Container className={className} hasError={isOverLimit}>
+      {inline ? content : <InnerContainer hasError={isOverLimit}>{content}</InnerContainer>}
     </Container>
   );
 });
