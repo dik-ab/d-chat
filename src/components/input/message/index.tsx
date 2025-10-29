@@ -24,7 +24,9 @@ interface MessageInputProps {
   /** インライン表示モード（ChatContainer内で使用する場合） */
   inline?: boolean;
   /** 背景色 */
-  backgroundColor?: string
+  backgroundColor?: string;
+  /** エラー状態変化時のハンドラー */
+  onErrorStateChange?: (hasError: boolean) => void;
 }
 
 export interface MessageInputRef {
@@ -40,11 +42,22 @@ const FixedBottomContainer = styled(Box)<{ hasError?: boolean }>(({ hasError }) 
   bottom: 0,
   left: 0,
   zIndex: 40,
-  minHeight: hasError ? '84px' : '64px',
+  minHeight: '64px',
   width: '100%',
   borderTop: '1px solid #E0E0E0',
   backgroundColor: '#FFFFFF',
-  transition: 'min-height 0.2s ease-in-out',
+  paddingTop: hasError ? '5px' : '0',
+  transition: 'padding-top 0.2s ease-in-out',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: hasError ? '-20px' : '0',
+    left: 0,
+    right: 0,
+    height: '20px',
+    backgroundColor: '#FFFFFF',
+    transition: 'top 0.2s ease-in-out',
+  },
 }));
 
 // インラインコンテナ（ChatContainer内で使用）
@@ -55,14 +68,13 @@ const InlineContainer = styled(Box)({
 });
 
 // 内部コンテナ
-const InnerContainer = styled(MuiContainer)<{ hasError?: boolean }>(({ hasError }) => ({
+const InnerContainer = styled(MuiContainer)({
   maxWidth: '448px', // max-w-md相当
   paddingLeft: '16px',
   paddingRight: '16px',
   paddingTop: '8px',
-  paddingBottom: hasError ? '28px' : '8px',
-  transition: 'padding-bottom 0.2s ease-in-out',
-}));
+  paddingBottom: '8px',
+});
 
 // フォームコンテナ
 const FormContainer = styled(Box)({
@@ -163,7 +175,8 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   isMicMode = false,
   className = '',
   inline = false,
-  backgroundColor
+  backgroundColor,
+  onErrorStateChange
 }, ref) => {
   const [internalValue, setInternalValue] = useState('');
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -233,8 +246,13 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   const isOverLimit = value.length > MAX_CHAR_LIMIT;
   const shouldDisableSend = disabled || !value.trim() || isOverLimit;
 
+  // エラー状態の変化を監視して親に通知
+  React.useEffect(() => {
+    onErrorStateChange?.(isOverLimit);
+  }, [isOverLimit, onErrorStateChange]);
+
   const content = (
-    <form onSubmit={handleFormSubmit}>
+    <form onSubmit={handleFormSubmit} style={{ transform: isOverLimit ? 'translateY(-20px)' : 'translateY(0)', transition: 'transform 0.2s ease-in-out' }}>
       <FormContainer>
         <InputContainer>
           <StyledTextArea
@@ -280,7 +298,7 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
 
   return (
     <Container className={className} hasError={isOverLimit}>
-      {inline ? content : <InnerContainer hasError={isOverLimit}>{content}</InnerContainer>}
+      {inline ? content : <InnerContainer>{content}</InnerContainer>}
     </Container>
   );
 });
