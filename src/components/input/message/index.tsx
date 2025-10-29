@@ -61,11 +61,24 @@ const FixedBottomContainer = styled(Box)<{ hasError?: boolean }>(({ hasError }) 
 }));
 
 // インラインコンテナ（ChatContainer内で使用）
-const InlineContainer = styled(Box)({
+const InlineContainer = styled(Box)<{ hasError?: boolean }>(({ hasError }) => ({
   width: '100%',
   minHeight: '48px',
   padding: '8px',
-});
+  paddingTop: hasError ? '13px' : '8px',
+  transition: 'padding-top 0.2s ease-in-out',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: hasError ? '-20px' : '0',
+    left: 0,
+    right: 0,
+    height: '20px',
+    backgroundColor: '#FFFFFF',
+    transition: 'top 0.2s ease-in-out',
+  },
+}));
 
 // 内部コンテナ
 const InnerContainer = styled(MuiContainer)({
