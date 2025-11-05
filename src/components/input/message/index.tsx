@@ -24,7 +24,9 @@ interface MessageInputProps {
   /** インライン表示モード（ChatContainer内で使用する場合） */
   inline?: boolean;
   /** 背景色 */
-  backgroundColor?: string
+  backgroundColor?: string;
+  /** エラー状態変化時のハンドラー */
+  onErrorStateChange?: (hasError: boolean) => void;
 }
 
 export interface MessageInputRef {
@@ -35,7 +37,7 @@ export interface MessageInputRef {
 }
 
 // 画面下部に固定されるコンテナ
-const FixedBottomContainer = styled(Box)({
+const FixedBottomContainer = styled(Box)<{ hasError?: boolean }>(({ hasError }) => ({
   position: 'fixed',
   bottom: 0,
   left: 0,
@@ -44,14 +46,39 @@ const FixedBottomContainer = styled(Box)({
   width: '100%',
   borderTop: '1px solid #E0E0E0',
   backgroundColor: '#FFFFFF',
-});
+  paddingTop: hasError ? '5px' : '0',
+  transition: 'padding-top 0.2s ease-in-out',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: hasError ? '-20px' : '0',
+    left: 0,
+    right: 0,
+    height: '20px',
+    backgroundColor: '#FFFFFF',
+    transition: 'top 0.2s ease-in-out',
+  },
+}));
 
 // インラインコンテナ（ChatContainer内で使用）
-const InlineContainer = styled(Box)({
+const InlineContainer = styled(Box)<{ hasError?: boolean }>(({ hasError }) => ({
   width: '100%',
   minHeight: '48px',
   padding: '8px',
-});
+  paddingTop: hasError ? '13px' : '8px',
+  transition: 'padding-top 0.2s ease-in-out',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: hasError ? '-20px' : '0',
+    left: 0,
+    right: 0,
+    height: '20px',
+    backgroundColor: '#FFFFFF',
+    transition: 'top 0.2s ease-in-out',
+  },
+}));
 
 // 内部コンテナ
 const InnerContainer = styled(MuiContainer)({
@@ -70,7 +97,8 @@ const FormContainer = styled(Box)({
 });
 
 // 入力欄コンテナ
-const InputContainer = styled(Box)({position: 'relative',
+const InputContainer = styled(Box)({
+  position: 'relative',
   flex: 1,
   borderRadius: '24px',
   backgroundColor: '#F5F5F5',
@@ -139,11 +167,13 @@ const CharacterCount = styled(Typography)(({ isOverLimit }: { isOverLimit: boole
   pointerEvents: 'none',
 }));
 
-const ErrorMessage = styled(Typography)({position: 'absolute',
+const ErrorMessage = styled(Typography)({
+  position: 'absolute',
   bottom: '-20px',
   left: '16px',
   fontSize: '12px',
   color: '#d32f2f',
+  whiteSpace: 'nowrap',
 });
 
 const MAX_CHAR_LIMIT = 400;
@@ -158,7 +188,8 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   isMicMode = false,
   className = '',
   inline = false,
-  backgroundColor
+  backgroundColor,
+  onErrorStateChange
 }, ref) => {
   const [internalValue, setInternalValue] = useState('');
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -228,8 +259,13 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   const isOverLimit = value.length > MAX_CHAR_LIMIT;
   const shouldDisableSend = disabled || !value.trim() || isOverLimit;
 
+  // エラー状態の変化を監視して親に通知
+  React.useEffect(() => {
+    onErrorStateChange?.(isOverLimit);
+  }, [isOverLimit, onErrorStateChange]);
+
   const content = (
-    <form onSubmit={handleFormSubmit}>
+    <form onSubmit={handleFormSubmit} style={{ transform: isOverLimit ? 'translateY(-20px)' : 'translateY(0)', transition: 'transform 0.2s ease-in-out' }}>
       <FormContainer>
         <InputContainer>
           <StyledTextArea
@@ -274,7 +310,7 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   );
 
   return (
-    <Container className={className}>
+    <Container className={className} hasError={isOverLimit}>
       {inline ? content : <InnerContainer>{content}</InnerContainer>}
     </Container>
   );
