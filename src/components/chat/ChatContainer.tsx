@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from '../../theme/theme';
@@ -52,6 +52,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   const lastUserMessageId = useRef<number | null>(null);
   const messageInputRef = useRef<MessageInputRef>(null);
+  const [hasInputError, setHasInputError] = useState(false);
 
   // ユーザーメッセージが存在するかチェック
   const hasUserMessage = messages.some(msg => msg.type === 'user');
@@ -261,6 +262,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               onSend={handleSendMessage}
               disabled={isCreatingConversation || isReplying}
               backgroundColor={chatSetting?.assistant_speech_bubble_color}
+              onErrorStateChange={setHasInputError}
             />
             {(isCreatingConversation || isReplying) && (
               <Box
@@ -334,11 +336,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                 },
                 left: 0,
                 right: 0,
-                bottom: '64px', // メッセージ入力エリアの高さ
+                bottom: hasInputError ? '84px' : '64px', // エラー時は高さを増やす
                 overflowY: 'auto',
                 padding: 0,
                 display: 'flex',
                 flexDirection: 'column',
+                transition: 'bottom 0.2s ease-in-out',
                 '&::-webkit-scrollbar': {
                   width: '4px',
                 },
@@ -435,6 +438,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               disabled={isCreatingConversation || isReplying || isPolling || chatSetting?.monthly_limit_exceeded}
               inline={true}
               backgroundColor={chatSetting?.assistant_speech_bubble_color}
+              onErrorStateChange={setHasInputError}
             />
             {(isCreatingConversation || isReplying) && (
               <Box
