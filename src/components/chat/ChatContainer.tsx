@@ -194,8 +194,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     );
   }
 
-  // 動画オーバーレイの表示判定
-  const showVideoOverlay = !hasUserMessage && chatSetting.bg_movie_url && chatSetting.bg_movie_bubble_message;
+  // 動画オーバーレイの表示判定（月間上限に達している場合は表示しない）
+  const showVideoOverlay = !hasUserMessage && !chatSetting.monthly_limit_exceeded && chatSetting.bg_movie_url && chatSetting.bg_movie_bubble_message;
 
   // 動画表示モードの場合は、専用のレイアウトを返す
   if (showVideoOverlay) {
