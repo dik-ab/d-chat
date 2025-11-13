@@ -59,7 +59,7 @@ export const useMessageHandler = ({
           limitMessages.push({
             id: Date.now() + 1,
             type: 'company',
-            content: `<a href="${chatSetting.conversation_monthly_limit_url}" target="_blank">詳細はこちら</a>`,
+            content: `<a href="${chatSetting.conversation_monthly_limit_url}" target="_blank">お問い合わせはこちら</a>`,
             timestamp: new Date(),
             conversationStatus: {
               state: 'initial'
