@@ -162,8 +162,23 @@ export const useChatActions = ({
         // エラーの種類に応じてメッセージを設定
         if (error instanceof ApiErrorClass) {
           if (error.status === 422) {
-            // 不適切なコンテンツ
-            errorContent = 'ご入力内容に制限対象の語句が含まれています。表現を変えてもう一度お試しください。（複数回に渡って制限対象の語句の入力を検知すると、一時的にチャットがご利用いただけなくなります。何卒ご了承ください。）';
+            // 422エラーの詳細をレスポンスから判別
+            const errorResponse = error.responseBody as { errors?: string[] };
+            const errorMessage = errorResponse?.errors?.[0] || '';
+            
+            if (errorMessage.includes('monthly limit exceeded')) {
+              // 月間会話上限
+              errorContent = '申し訳ございません。月間のご利用上限に達しました。来月以降に再度ご利用ください。';
+            } else if (errorMessage.includes('chat unavailable')) {
+              // チャット無効
+              errorContent = '申し訳ございません。一時的にサービスがご利用いただけません。しばらく経ってから再度お試しください。';
+            } else if (errorMessage.includes('inappropriate content')) {
+              // NGワード・個人情報
+              errorContent = 'ご入力内容に制限対象の語句が含まれています。表現を変えてもう一度お試しください。（複数回に渡って制限対象の語句の入力を検知すると、一時的にチャットがご利用いただけなくなります。何卒ご了承ください。）';
+            } else {
+              // デフォルトの422エラー
+              errorContent = 'ご入力内容に制限対象の語句が含まれています。表現を変えてもう一度お試しください。（複数回に渡って制限対象の語句の入力を検知すると、一時的にチャットがご利用いただけなくなります。何卒ご了承ください。）';
+            }
           } else if (error.status === 403) {
             // ブロックされたアクセス
             errorContent = '複数回の制限対象の語句の入力を検知しました。一時的にチャット機能を停止中です。1日以上の時間を空けて再度ご質問ください。';
