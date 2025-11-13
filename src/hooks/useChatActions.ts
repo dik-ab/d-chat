@@ -167,8 +167,8 @@ export const useChatActions = ({
             const errorMessage = errorResponse?.errors?.[0] || '';
             
             if (errorMessage.includes('monthly limit exceeded')) {
-              // 月間会話上限
-              errorContent = '申し訳ございません。月間のご利用上限に達しました。来月以降に再度ご利用ください。';
+              // 月間会話上限 - 管理画面で設定されたメッセージを使用
+              errorContent = chatSetting?.conversation_monthly_limit_message || '申し訳ございません。月間のご利用上限に達しました。来月以降に再度ご利用ください。';
             } else if (errorMessage.includes('chat unavailable')) {
               // チャット無効
               errorContent = '申し訳ございません。一時的にサービスがご利用いただけません。しばらく経ってから再度お試しください。';
