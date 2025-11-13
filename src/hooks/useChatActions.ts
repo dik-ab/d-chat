@@ -39,7 +39,41 @@ export const useChatActions = ({
   chatSetting,
 }: UseChatActionsProps) => {
   const handleSendMessage = async (content: string) => {
-    if (!accessTokenData?.token || isCreatingConversation || isReplying || chatSetting?.monthly_limit_exceeded) {
+    if (!accessTokenData?.token || isCreatingConversation || isReplying) {
+      return;
+    }
+    
+    // monthly_limit_exceededがtrueの場合の処理
+    if (chatSetting?.monthly_limit_exceeded) {
+      const userMessage: Message = {
+        id: Date.now(),
+        type: 'user',
+        content,
+        timestamp: new Date(),
+        conversationStatus: currentConversation ? {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
+        } : {
+          state: 'initial'
+        }
+      };
+      
+      const limitMessage: Message = {
+        id: Date.now() + 1,
+        type: 'company',
+        content: chatSetting.conversation_monthly_limit_message || '申し訳ございません。月間のご利用上限に達しました。来月以降に再度ご利用ください。',
+        timestamp: new Date(),
+        conversationStatus: currentConversation ? {
+          state: currentConversation.state,
+          token: currentConversation.token,
+          ratingTypeId: currentConversation.rating_type_id
+        } : {
+          state: 'initial'
+        }
+      };
+      
+      setMessages(prev => [...prev, userMessage, limitMessage]);
       return;
     }
     
