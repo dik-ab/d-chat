@@ -31,6 +31,7 @@ interface ChatContainerProps {
   onSendMessage: (content: string) => void;
   onRating: (ratingType: 'good' | 'bad' | 'none') => void;
   onCloseChat: () => void;
+  onUrlClick?: (url: string) => void;
 }
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({
@@ -48,6 +49,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onSendMessage,
   onRating,
   onCloseChat,
+  onUrlClick,
 }) => {
   const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   const lastUserMessageId = useRef<number | null>(null);
@@ -408,6 +410,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                           contactPageUrl: message.ratingData.contactPageUrl,
                           onRating: onRating
                         } : undefined}
+                        onUrlClick={onUrlClick}
                       />
                     </Box>
                   </Box>
