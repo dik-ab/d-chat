@@ -13,6 +13,8 @@ interface RatingButtonsProps {
   contactPageUrl?: string | null;
   /** 評価ボタンクリック時のハンドラー */
   onRating: (ratingType: 'good' | 'bad' | 'none') => void;
+  /** URLクリック時のトラッキング関数 */
+  onUrlClick?: (url: string) => void;
 }
 
 /**
@@ -26,6 +28,7 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
   conversationState,
   contactPageUrl,
   onRating,
+  onUrlClick,
 }) => {
   const [hasRated, setHasRated] = useState(false);
   const hasCalledNoneRef = useRef(false);
@@ -65,6 +68,11 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
             href={contactPageUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => {
+              if (onUrlClick) {
+                onUrlClick(contactPageUrl);
+              }
+            }}
             sx={{
               color: '#FFFFFF',
               textDecoration: 'underline',
