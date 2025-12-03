@@ -20,6 +20,8 @@ interface CompanyMessageProps {
     contactPageUrl?: string | null;
     onRating: (ratingType: 'good' | 'bad' | 'none') => void;
   };
+  /** URLクリック時のトラッキング関数 */
+  onUrlClick?: (url: string) => void;
 }
 
 const MessageContainer = styled(Box)(() => ({
@@ -76,7 +78,7 @@ const MessageText = styled(Typography)(() => ({
 }));
 
 // HTMLの<a>タグと<span>タグを解析してReactコンポーネントに変換する関数
-const parseMessageWithLinks = (message: string): React.ReactNode => {
+const parseMessageWithLinks = (message: string, onUrlClick?: (url: string) => void): React.ReactNode => {
   // <a>タグと<span>タグを含むHTMLを解析する正規表現
   const htmlRegex = /<(a|span)\s+([^>]*?)>(.*?)<\/\1>/gi;
   const parts: React.ReactNode[] = [];
@@ -109,6 +111,11 @@ const parseMessageWithLinks = (message: string): React.ReactNode => {
           href={href}
           target={target}
           rel={target === '_blank' ? 'noopener noreferrer' : undefined}
+          onClick={() => {
+            if (onUrlClick) {
+              onUrlClick(href);
+            }
+          }}
           sx={{
             color: 'inherit',
             textDecoration: 'underline',
@@ -191,6 +198,7 @@ export const CompanyMessage: React.FC<CompanyMessageProps> = ({
   iconUrl = '/robot.svg',
   className = '',
   ratingData,
+  onUrlClick,
 }) => {
   return (
     <MessageContainer className={className}>
@@ -204,10 +212,11 @@ export const CompanyMessage: React.FC<CompanyMessageProps> = ({
             conversationState={ratingData.conversationState}
             contactPageUrl={ratingData.contactPageUrl}
             onRating={ratingData.onRating}
+            onUrlClick={onUrlClick}
           />
         ) : (
           <MessageText>
-            {parseMessageWithLinks(message)}
+            {parseMessageWithLinks(message, onUrlClick)}
           </MessageText>
         )}
       </MessageBubble>
