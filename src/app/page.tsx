@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useChat } from '../hooks/useChat';
 import { useMessageHandler } from '../hooks/useMessageHandler';
 import { useChatActions } from '../hooks/useChatActions';
+import { useUrlTracking } from '../hooks/useUrlTracking';
 import { ChatContainer } from '../components/chat/ChatContainer';
 
 function ChatPage() {
@@ -55,6 +56,13 @@ function ChatPage() {
     chatSetting: chatState.chatSetting,
   });
 
+  // URL追跡機能
+  const { trackUrl } = useUrlTracking({
+    identifier: identifier || 'livepass_test_chatui',
+    conversationToken: chatState.currentConversation?.token,
+    accessToken: chatState.accessTokenData?.token,
+  });
+
 
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
@@ -73,6 +81,7 @@ function ChatPage() {
         onSendMessage={handleSendMessage}
         onRating={handleRating}
         onCloseChat={handleCloseChat}
+        onUrlClick={trackUrl}
       />
     </div>
   );
@@ -97,6 +106,7 @@ export default function Home() {
           onSendMessage={() => {}}
           onRating={() => {}}
           onCloseChat={() => {}}
+          onUrlClick={() => {}}
         />
       </div>
     }>

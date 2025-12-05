@@ -178,3 +178,22 @@ export async function rateConversation(
     }),
   });
 }
+
+// 070. URL遷移トラッキング
+export async function trackUrlAccess(
+  identifier: string,
+  token: string,
+  url: string,
+  accessToken: string
+): Promise<void> {
+  return apiRequest<void>(`/spaces/${identifier}/conversations/${token}/url_accesses`, {
+    method: 'POST',
+    headers: {
+      'X-Authorization': accessToken,
+    },
+    body: JSON.stringify({
+      identifier,
+      url,
+    }),
+  });
+}
