@@ -124,8 +124,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     // 最新メッセージが特定のステータスかチェック
     const latestMessageHasSpecificStatus = latestMessage.conversationStatus?.state && 
       ['top1', 'top3', 'unmatched'].includes(latestMessage.conversationStatus.state);
+    
+    // 更問い状態かチェック（reply_waiting状態、またはoptionsメッセージがある場合）
+    const isReplyWaiting = currentConversation?.state === 'reply_waiting' || 
+                          (latestMessage.type === 'options' && latestMessage.optionsData);
 
-    if (latestMessageHasSpecificStatus) {
+    if (latestMessageHasSpecificStatus || isReplyWaiting) {
       
       // 最後のユーザーメッセージにスクロール
       if (lastUserMessageId.current && messageRefs.current[lastUserMessageId.current] && chatAreaRef.current) {
@@ -147,7 +151,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages]);
+  }, [messages, currentConversation?.state]);
   // ローディング中の表示
   if (isLoading || !chatSetting) {
     return (
