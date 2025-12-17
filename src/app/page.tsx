@@ -7,6 +7,7 @@ import { useMessageHandler } from '../hooks/useMessageHandler';
 import { useChatActions } from '../hooks/useChatActions';
 import { useUrlTracking } from '../hooks/useUrlTracking';
 import { ChatContainer } from '../components/chat/ChatContainer';
+import DeviceSupportGuard from '../components/DeviceSupportGuard';
 
 function ChatPage() {
   const chatAreaRef = useRef<HTMLDivElement>(null);
@@ -89,28 +90,30 @@ function ChatPage() {
 
 export default function Home() {
   return (
-    <Suspense fallback={
-      <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
-        <ChatContainer
-          messages={[]}
-          chatSetting={undefined}
-          isLoading={true}
-          error={null}
-          showLoadingMessage={false}
-          loadingMessageId={null}
-          isCreatingConversation={false}
-          isReplying={false}
-          isPolling={false}
-          currentConversation={null}
-          chatAreaRef={{ current: null }}
-          onSendMessage={() => {}}
-          onRating={() => {}}
-          onCloseChat={() => {}}
-          onUrlClick={() => {}}
-        />
-      </div>
-    }>
-      <ChatPage />
-    </Suspense>
+    <DeviceSupportGuard minIOSVersion={14}>
+      <Suspense fallback={
+        <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
+          <ChatContainer
+            messages={[]}
+            chatSetting={undefined}
+            isLoading={true}
+            error={null}
+            showLoadingMessage={false}
+            loadingMessageId={null}
+            isCreatingConversation={false}
+            isReplying={false}
+            isPolling={false}
+            currentConversation={null}
+            chatAreaRef={{ current: null }}
+            onSendMessage={() => {}}
+            onRating={() => {}}
+            onCloseChat={() => {}}
+            onUrlClick={() => {}}
+          />
+        </div>
+      }>
+        <ChatPage />
+      </Suspense>
+    </DeviceSupportGuard>
   );
 }
