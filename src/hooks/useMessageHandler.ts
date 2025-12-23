@@ -286,25 +286,29 @@ const handleTop1Response = (
 const handleNormalResponse = (
   question: Question,
   currentConversation: Conversation,
-  chatSetting: ChatSetting | undefined,
+  _chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
-  setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   if (!question.answer) return;
   
-  const answerMessage: Message = {
-    id: Date.now() + Math.random(),
-    type: 'company',
-    content: question.answer.content,
-    timestamp: new Date(),
-    conversationStatus: {
-      state: currentConversation.state,
-      token: currentConversation.token,
-      ratingTypeId: currentConversation.rating_type_id
-    }
-  };
-  
-  setMessages(prev => [...prev, answerMessage]);
+  // unmatchedの場合はanswer.contentを表示しない
+  if (currentConversation.state !== 'unmatched') {
+    const answerMessage: Message = {
+      id: Date.now() + Math.random(),
+      type: 'company',
+      content: question.answer.content,
+      timestamp: new Date(),
+      conversationStatus: {
+        state: currentConversation.state,
+        token: currentConversation.token,
+        ratingTypeId: currentConversation.rating_type_id
+      }
+    };
+    
+    setMessages(prev => [...prev, answerMessage]);
+  }
   
   // オプションがある場合は選択肢メッセージを追加
   if (question.answer.options && question.answer.options.length > 0) {
@@ -328,9 +332,9 @@ const handleNormalResponse = (
   }
   
   // unmatchedの時は評価メッセージを表示しない
-  // if (currentConversation.state === 'unmatched' && chatSetting) {
+  // if (currentConversation.state === 'unmatched' && _chatSetting) {
   //   setTimeout(() => {
-  //     addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+  //     addResultAndRatingMessages(currentConversation, _chatSetting, setMessages, _setShowRatingMessage);
   //   }, 1000);
   // }
 };
