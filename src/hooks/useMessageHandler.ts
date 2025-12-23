@@ -286,25 +286,29 @@ const handleTop1Response = (
 const handleNormalResponse = (
   question: Question,
   currentConversation: Conversation,
-  chatSetting: ChatSetting | undefined,
+  _chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
-  setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   if (!question.answer) return;
   
-  const answerMessage: Message = {
-    id: Date.now() + Math.random(),
-    type: 'company',
-    content: question.answer.content,
-    timestamp: new Date(),
-    conversationStatus: {
-      state: currentConversation.state,
-      token: currentConversation.token,
-      ratingTypeId: currentConversation.rating_type_id
-    }
-  };
-  
-  setMessages(prev => [...prev, answerMessage]);
+  // unmatchedの場合はanswer.contentを表示しない
+  if (currentConversation.state !== 'unmatched') {
+    const answerMessage: Message = {
+      id: Date.now() + Math.random(),
+      type: 'company',
+      content: question.answer.content,
+      timestamp: new Date(),
+      conversationStatus: {
+        state: currentConversation.state,
+        token: currentConversation.token,
+        ratingTypeId: currentConversation.rating_type_id
+      }
+    };
+    
+    setMessages(prev => [...prev, answerMessage]);
+  }
   
   // オプションがある場合は選択肢メッセージを追加
   if (question.answer.options && question.answer.options.length > 0) {
@@ -327,12 +331,12 @@ const handleNormalResponse = (
     }, 300);
   }
   
-  // unmatchedの時は評価メッセージを表示しない
-  // if (currentConversation.state === 'unmatched' && chatSetting) {
-  //   setTimeout(() => {
-  //     addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
-  //   }, 1000);
-  // }
+  // unmatchedの時も結果メッセージを表示する
+  if (currentConversation.state === 'unmatched' && _chatSetting) {
+    setTimeout(() => {
+      addResultAndRatingMessages(currentConversation, _chatSetting, setMessages, _setShowRatingMessage);
+    }, 1000);
+  }
 };
 
 // 結果メッセージと評価メッセージを追加
@@ -373,29 +377,32 @@ const addResultAndRatingMessages = (
     
     setMessages(prev => [...prev, resultMessageObj]);
     
-    setTimeout(() => {
-      const ratingId = Date.now() + Math.random() + 2000;
-      const ratingMessage: Message = {
-        id: ratingId,
-        type: 'company',
-        content: '',
-        timestamp: new Date(),
-        isRatingMessage: true,
-        ratingData: {
-          matchedMessage: '',
-          unmatchedMessage: '',
-          conversationState: currentConversation.state as 'top1' | 'top3' | 'unmatched',
-          contactPageUrl: null
-        },
-        conversationStatus: {
-          state: currentConversation.state,
-          token: currentConversation.token,
-          ratingTypeId: currentConversation.rating_type_id
-        }
-      };
-      
-      setMessages(prev => [...prev, ratingMessage]);
-      setShowRatingMessage(true);
-    }, 500);
+    // unmatchedの時は評価メッセージを表示しない
+    if (currentConversation.state !== 'unmatched') {
+      setTimeout(() => {
+        const ratingId = Date.now() + Math.random() + 2000;
+        const ratingMessage: Message = {
+          id: ratingId,
+          type: 'company',
+          content: '',
+          timestamp: new Date(),
+          isRatingMessage: true,
+          ratingData: {
+            matchedMessage: '',
+            unmatchedMessage: '',
+            conversationState: currentConversation.state as 'top1' | 'top3' | 'unmatched',
+            contactPageUrl: null
+          },
+          conversationStatus: {
+            state: currentConversation.state,
+            token: currentConversation.token,
+            ratingTypeId: currentConversation.rating_type_id
+          }
+        };
+        
+        setMessages(prev => [...prev, ratingMessage]);
+        setShowRatingMessage(true);
+      }, 500);
+    }
   }, 1000);
 };
