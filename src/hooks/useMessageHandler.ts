@@ -292,19 +292,22 @@ const handleNormalResponse = (
 ) => {
   if (!question.answer) return;
   
-  const answerMessage: Message = {
-    id: Date.now() + Math.random(),
-    type: 'company',
-    content: question.answer.content,
-    timestamp: new Date(),
-    conversationStatus: {
-      state: currentConversation.state,
-      token: currentConversation.token,
-      ratingTypeId: currentConversation.rating_type_id
-    }
-  };
-  
-  setMessages(prev => [...prev, answerMessage]);
+  // unmatchedの場合はanswer.contentを表示しない
+  if (currentConversation.state !== 'unmatched') {
+    const answerMessage: Message = {
+      id: Date.now() + Math.random(),
+      type: 'company',
+      content: question.answer.content,
+      timestamp: new Date(),
+      conversationStatus: {
+        state: currentConversation.state,
+        token: currentConversation.token,
+        ratingTypeId: currentConversation.rating_type_id
+      }
+    };
+    
+    setMessages(prev => [...prev, answerMessage]);
+  }
   
   // オプションがある場合は選択肢メッセージを追加
   if (question.answer.options && question.answer.options.length > 0) {
