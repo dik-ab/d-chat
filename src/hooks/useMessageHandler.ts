@@ -331,12 +331,12 @@ const handleNormalResponse = (
     }, 300);
   }
   
-  // unmatchedの時は評価メッセージを表示しない
-  // if (currentConversation.state === 'unmatched' && _chatSetting) {
-  //   setTimeout(() => {
-  //     addResultAndRatingMessages(currentConversation, _chatSetting, setMessages, _setShowRatingMessage);
-  //   }, 1000);
-  // }
+  // unmatchedの時も結果メッセージを表示する
+  if (currentConversation.state === 'unmatched' && _chatSetting) {
+    setTimeout(() => {
+      addResultAndRatingMessages(currentConversation, _chatSetting, setMessages, _setShowRatingMessage);
+    }, 1000);
+  }
 };
 
 // 結果メッセージと評価メッセージを追加
@@ -377,29 +377,32 @@ const addResultAndRatingMessages = (
     
     setMessages(prev => [...prev, resultMessageObj]);
     
-    setTimeout(() => {
-      const ratingId = Date.now() + Math.random() + 2000;
-      const ratingMessage: Message = {
-        id: ratingId,
-        type: 'company',
-        content: '',
-        timestamp: new Date(),
-        isRatingMessage: true,
-        ratingData: {
-          matchedMessage: '',
-          unmatchedMessage: '',
-          conversationState: currentConversation.state as 'top1' | 'top3' | 'unmatched',
-          contactPageUrl: null
-        },
-        conversationStatus: {
-          state: currentConversation.state,
-          token: currentConversation.token,
-          ratingTypeId: currentConversation.rating_type_id
-        }
-      };
-      
-      setMessages(prev => [...prev, ratingMessage]);
-      setShowRatingMessage(true);
-    }, 500);
+    // unmatchedの時は評価メッセージを表示しない
+    if (currentConversation.state !== 'unmatched') {
+      setTimeout(() => {
+        const ratingId = Date.now() + Math.random() + 2000;
+        const ratingMessage: Message = {
+          id: ratingId,
+          type: 'company',
+          content: '',
+          timestamp: new Date(),
+          isRatingMessage: true,
+          ratingData: {
+            matchedMessage: '',
+            unmatchedMessage: '',
+            conversationState: currentConversation.state as 'top1' | 'top3' | 'unmatched',
+            contactPageUrl: null
+          },
+          conversationStatus: {
+            state: currentConversation.state,
+            token: currentConversation.token,
+            ratingTypeId: currentConversation.rating_type_id
+          }
+        };
+        
+        setMessages(prev => [...prev, ratingMessage]);
+        setShowRatingMessage(true);
+      }, 500);
+    }
   }, 1000);
 };
