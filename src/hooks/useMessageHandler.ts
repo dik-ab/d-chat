@@ -286,9 +286,10 @@ const handleTop1Response = (
 const handleNormalResponse = (
   question: Question,
   currentConversation: Conversation,
-  chatSetting: ChatSetting | undefined,
+  _chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
-  setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   if (!question.answer) return;
   
@@ -331,9 +332,9 @@ const handleNormalResponse = (
   }
   
   // unmatchedの時は評価メッセージを表示しない
-  // if (currentConversation.state === 'unmatched' && chatSetting) {
+  // if (currentConversation.state === 'unmatched' && _chatSetting) {
   //   setTimeout(() => {
-  //     addResultAndRatingMessages(currentConversation, chatSetting, setMessages, setShowRatingMessage);
+  //     addResultAndRatingMessages(currentConversation, _chatSetting, setMessages, _setShowRatingMessage);
   //   }, 1000);
   // }
 };
