@@ -7,7 +7,6 @@ import { useMessageHandler } from '../hooks/useMessageHandler';
 import { useChatActions } from '../hooks/useChatActions';
 import { useUrlTracking } from '../hooks/useUrlTracking';
 import { ChatContainer } from '../components/chat/ChatContainer';
-import DeviceSupportGuard from '../components/DeviceSupportGuard';
 
 function ChatPage() {
   const chatAreaRef = useRef<HTMLDivElement>(null);
@@ -90,7 +89,6 @@ function ChatPage() {
 
 export default function Home() {
   return (
-    <DeviceSupportGuard minIOSVersion={14}>
       <Suspense fallback={
         <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
           <ChatContainer
@@ -114,6 +112,5 @@ export default function Home() {
       }>
         <ChatPage />
       </Suspense>
-    </DeviceSupportGuard>
   );
 }
