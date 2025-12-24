@@ -89,28 +89,28 @@ function ChatPage() {
 
 export default function Home() {
   return (
-    <Suspense fallback={
-      <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
-        <ChatContainer
-          messages={[]}
-          chatSetting={undefined}
-          isLoading={true}
-          error={null}
-          showLoadingMessage={false}
-          loadingMessageId={null}
-          isCreatingConversation={false}
-          isReplying={false}
-          isPolling={false}
-          currentConversation={null}
-          chatAreaRef={{ current: null }}
-          onSendMessage={() => {}}
-          onRating={() => {}}
-          onCloseChat={() => {}}
-          onUrlClick={() => {}}
-        />
-      </div>
-    }>
-      <ChatPage />
-    </Suspense>
+      <Suspense fallback={
+        <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
+          <ChatContainer
+            messages={[]}
+            chatSetting={undefined}
+            isLoading={true}
+            error={null}
+            showLoadingMessage={false}
+            loadingMessageId={null}
+            isCreatingConversation={false}
+            isReplying={false}
+            isPolling={false}
+            currentConversation={null}
+            chatAreaRef={{ current: null }}
+            onSendMessage={() => {}}
+            onRating={() => {}}
+            onCloseChat={() => {}}
+            onUrlClick={() => {}}
+          />
+        </div>
+      }>
+        <ChatPage />
+      </Suspense>
   );
 }
