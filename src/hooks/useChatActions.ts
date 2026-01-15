@@ -1,7 +1,7 @@
 'use client';
 
 import { Message } from '@/types/chat';
-import { rateConversation, ApiErrorClass } from '../lib/api';
+import { rateConversation, selectOption, ApiErrorClass } from '../lib/api';
 import { Conversation, AccessTokenResponse, ChatSetting } from '../types/api';
 
 interface UseChatActionsProps {
@@ -289,9 +289,35 @@ export const useChatActions = ({
     }
   };
 
+  const handleOptionSelect = async (questionId: number, optionId: number) => {
+    if (!currentConversation?.token || !accessTokenData?.token) {
+      return;
+    }
+
+    try {
+      await selectOption(
+        identifier,
+        currentConversation.token,
+        questionId,
+        optionId,
+        accessTokenData.token
+      );
+
+      console.log('[DEBUG] Option selected:', {
+        questionId,
+        optionId,
+        conversationToken: currentConversation.token
+      });
+    } catch (error) {
+      console.error('Failed to track option selection:', error);
+      // エラーが発生しても選択肢のタップは続行（ユーザー体験を妨げない）
+    }
+  };
+
   return {
     handleSendMessage,
     handleRating,
     handleCloseChat,
+    handleOptionSelect,
   };
 };
