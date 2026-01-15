@@ -319,6 +319,8 @@ const handleNormalResponse = (
         content: '',
         timestamp: new Date(),
         optionsData: {
+          questionId: question.id,
+          answerId: question.answer!.id,
           options: question.answer!.options!
         },
         conversationStatus: {
