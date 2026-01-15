@@ -11,7 +11,10 @@ export interface Message {
     contactPageUrl?: string | null;
   };
   optionsData?: {
+    questionId: number;
+    answerId: number;
     options: Array<{
+      id: number;
       content: string;
       simple_content: string;
     }>;
