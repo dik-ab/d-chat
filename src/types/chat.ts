@@ -1,6 +1,6 @@
 export interface Message {
   id: number;
-  type: 'user' | 'company' | 'rating' | 'separator' | 'options';
+  type: 'user' | 'company' | 'rating' | 'separator' | 'options' | 'faq_tiles';
   content: string;
   timestamp: Date;
   isRatingMessage?: boolean;
@@ -17,6 +17,14 @@ export interface Message {
       id: number;
       content: string;
       simple_content: string;
+    }>;
+  };
+  faqTilesData?: {
+    faqs: Array<{
+      question: string;
+      answer: string;
+      related_url?: string;
+      score: number;
     }>;
   };
   conversationStatus?: {
