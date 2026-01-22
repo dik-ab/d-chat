@@ -274,8 +274,25 @@ export const useChatActions = ({
             ratingTypeId: ratingTypeId
           }
         };
-        
+
         setMessages(prev => [...prev, thankYouMessage]);
+
+        // 新しいセッション開始を示すメッセージを追加
+        setTimeout(() => {
+          const sessionSeparatorMessage: Message = {
+            id: Date.now() + Math.random(),
+            type: 'separator',
+            content: 'ここから新しいチャット\n（会話内容は引き継がれません）',
+            timestamp: new Date(),
+            conversationStatus: {
+              state: 'final',
+              token: currentConversation.token,
+              ratingTypeId: ratingTypeId
+            }
+          };
+
+          setMessages(prev => [...prev, sessionSeparatorMessage]);
+        }, 500);
       }
       
     } catch (error) {
