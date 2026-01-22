@@ -3,6 +3,7 @@ import { styled } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
 
 interface Option {
+  id: number;
   content: string;
   simple_content: string;
 }
@@ -10,8 +11,12 @@ interface Option {
 interface OptionsMessageProps {
   /** 選択肢の配列 */
   options: Option[];
+  /** 質問ID */
+  questionId: number;
+  /** 回答ID */
+  answerId: number;
   /** 選択肢がクリックされた時のハンドラー */
-  onOptionClick: (content: string) => void;
+  onOptionClick: (content: string, optionId: number, questionId: number) => void;
   /** アシスタントアイコンのURL */
   iconUrl?: string;
   /** 背景色 */
@@ -27,34 +32,18 @@ const MessageContainer = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'flex-start',
   marginBottom: '8px',
-  maxWidth: '100%',
-  gap: '16px',
+  paddingLeft: '48px',
 }));
 
 const MessageBubble = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'bgColor',
 })<{ bgColor: string }>(({ bgColor }) => ({
   position: 'relative',
-  width: 'auto',
-  maxWidth: '100%',
+  width: '100%',
   backgroundColor: bgColor,
   borderRadius: '32px',
   padding: '16px',
   boxSizing: 'border-box',
-  
-  // 吹き出しの三角形
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: '10px',
-    left: '-5px',
-    width: '16px',
-    height: '32px',
-    backgroundColor: bgColor,
-    clipPath: 'polygon(100% 0%, 0% 50%, 100% 100%)',
-    borderRadius: '3px',
-    transform: 'rotate(135deg)',
-  },
 }));
 
 const OptionsHeader = styled(Typography)(() => ({
@@ -106,13 +95,6 @@ const OptionsFooter = styled(Typography)(() => ({
   marginTop: '8px',
 }));
 
-const IconImage = styled('img')(() => ({
-  width: '32px',
-  height: '32px',
-  borderRadius: '50%',
-  objectFit: 'cover',
-}));
-
 /**
  * 選択肢メッセージコンポーネント
  * 
@@ -120,6 +102,8 @@ const IconImage = styled('img')(() => ({
  */
 export const OptionsMessage: React.FC<OptionsMessageProps> = ({
   options,
+  questionId,
+  answerId: _answerId, // 将来的に使用する可能性があるため保持
   onOptionClick,
   iconUrl = '/robot.svg',
   backgroundColor = '#00A79E',
@@ -128,15 +112,14 @@ export const OptionsMessage: React.FC<OptionsMessageProps> = ({
 }) => {
   return (
     <MessageContainer className={className}>
-      <IconImage src={iconUrl} alt="Assistant" />
       <MessageBubble bgColor={backgroundColor}>
         <OptionsHeader>以下の選択肢の中に該当するものはありますか？</OptionsHeader>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {options.map((option, index) => (
+          {options.map((option) => (
             <OptionButton
-              key={index}
+              key={option.id}
               disabled={disabled}
-              onClick={() => !disabled && onOptionClick(option.content)}
+              onClick={() => !disabled && onOptionClick(option.content, option.id, questionId)}
             >
               <OptionText>{option.simple_content}</OptionText>
             </OptionButton>

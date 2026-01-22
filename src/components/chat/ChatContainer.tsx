@@ -11,6 +11,7 @@ import { CompanyMessage } from '../message/company';
 import { LoadingMessage } from '../message/loading';
 import { SeparatorMessage } from '../message/separator';
 import { OptionsMessage } from '../message/options';
+import { FaqTilesMessage } from '../message/faq-tiles';
 import { ChatBackground } from '../background/chat';
 import { VideoBackground } from '../background/video';
 import { Message } from '../../types/chat';
@@ -32,6 +33,7 @@ interface ChatContainerProps {
   onRating: (ratingType: 'good' | 'bad' | 'none') => void;
   onCloseChat: () => void;
   onUrlClick?: (url: string) => void;
+  onOptionSelect?: (questionId: number, optionId: number) => void;
 }
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({
@@ -50,6 +52,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onRating,
   onCloseChat,
   onUrlClick,
+  onOptionSelect,
 }) => {
   const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   const lastUserMessageId = useRef<number | null>(null);
@@ -83,20 +86,25 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   };
 
   // オプションがクリックされた時のハンドラー
-  const handleOptionClick = (content: string) => {
+  const handleOptionClick = (content: string, optionId: number, questionId: number) => {
+    // 選択肢のトラッキングAPIを呼び出す
+    if (onOptionSelect) {
+      onOptionSelect(questionId, optionId);
+    }
+
     if (messageInputRef.current && messageInputRef.current.textAreaRef) {
       const textArea = messageInputRef.current.textAreaRef;
       const start = textArea.selectionStart || 0;
       const end = textArea.selectionEnd || 0;
       const currentValue = messageInputRef.current.getValue();
-      
+
       // 内容に「。」を追加（すでに「。」で終わっていない場合のみ）
       const contentWithPeriod = content.endsWith('。') ? content : content + '。';
-      
+
       // カーソル位置に挿入
       const newValue = currentValue.substring(0, start) + contentWithPeriod + currentValue.substring(end);
       messageInputRef.current.setValue(newValue);
-      
+
       // カーソル位置を更新
       setTimeout(() => {
         textArea.selectionStart = textArea.selectionEnd = start + contentWithPeriod.length;
@@ -388,10 +396,19 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                 ) : message.type === 'options' && message.optionsData ? (
                   <OptionsMessage
                     options={message.optionsData.options}
+                    questionId={message.optionsData.questionId}
+                    answerId={message.optionsData.answerId}
                     onOptionClick={handleOptionClick}
                     iconUrl={chatSetting?.assistant_icon_url}
                     backgroundColor={chatSetting?.assistant_speech_bubble_color}
                     disabled={isCreatingConversation || isReplying}
+                  />
+                ) : message.type === 'faq_tiles' && message.faqTilesData ? (
+                  <FaqTilesMessage
+                    faqs={message.faqTilesData.faqs}
+                    iconUrl={chatSetting?.assistant_icon_url}
+                    backgroundColor={chatSetting?.assistant_speech_bubble_color}
+                    onUrlClick={onUrlClick}
                   />
                 ) : (
                   <Box sx={{ 

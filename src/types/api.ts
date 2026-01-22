@@ -38,6 +38,7 @@ export interface Question {
     content: string;
     answer_type: 'top1_match' | 'top3_match' | 'additional' | 'unmatched';
     options?: Array<{
+      id: number;
       content: string;
       simple_content: string;
     }>;

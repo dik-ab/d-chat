@@ -1,7 +1,7 @@
 'use client';
 
 import { Message } from '@/types/chat';
-import { rateConversation, ApiErrorClass } from '../lib/api';
+import { rateConversation, selectOption, ApiErrorClass } from '../lib/api';
 import { Conversation, AccessTokenResponse, ChatSetting } from '../types/api';
 
 interface UseChatActionsProps {
@@ -274,8 +274,25 @@ export const useChatActions = ({
             ratingTypeId: ratingTypeId
           }
         };
-        
+
         setMessages(prev => [...prev, thankYouMessage]);
+
+        // 新しいセッション開始を示すメッセージを追加
+        setTimeout(() => {
+          const sessionSeparatorMessage: Message = {
+            id: Date.now() + Math.random(),
+            type: 'separator',
+            content: 'ここから新しいチャット\n（会話内容は引き継がれません）',
+            timestamp: new Date(),
+            conversationStatus: {
+              state: 'final',
+              token: currentConversation.token,
+              ratingTypeId: ratingTypeId
+            }
+          };
+
+          setMessages(prev => [...prev, sessionSeparatorMessage]);
+        }, 500);
       }
       
     } catch (error) {
@@ -289,9 +306,35 @@ export const useChatActions = ({
     }
   };
 
+  const handleOptionSelect = async (questionId: number, optionId: number) => {
+    if (!currentConversation?.token || !accessTokenData?.token) {
+      return;
+    }
+
+    try {
+      await selectOption(
+        identifier,
+        currentConversation.token,
+        questionId,
+        optionId,
+        accessTokenData.token
+      );
+
+      console.log('[DEBUG] Option selected:', {
+        questionId,
+        optionId,
+        conversationToken: currentConversation.token
+      });
+    } catch (error) {
+      console.error('Failed to track option selection:', error);
+      // エラーが発生しても選択肢のタップは続行（ユーザー体験を妨げない）
+    }
+  };
+
   return {
     handleSendMessage,
     handleRating,
     handleCloseChat,
+    handleOptionSelect,
   };
 };

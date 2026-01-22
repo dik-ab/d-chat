@@ -132,9 +132,9 @@ const handleTop3Response = (
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
-  
+
   if (!question.answer || !question.rag_results) return;
-  
+
   const firstMessage: Message = {
     id: Date.now() + Math.random(),
     type: 'company',
@@ -146,60 +146,33 @@ const handleTop3Response = (
       ratingTypeId: currentConversation.rating_type_id
     }
   };
-  
-  const ragResults = question.rag_results.slice(0, 3);
-  const allMessages: Message[] = [];
-  
-  ragResults.forEach((ragResult, index) => {
-    // 2件目以降の回答の前に区切り線メッセージを追加
-    if (index > 0) {
-      allMessages.push({
-        id: Date.now() + Math.random() + index * 100,
-        type: 'separator' as const,
-        content: `------ ${index + 1}件目の回答 ------`,
-        timestamp: new Date(),
-        conversationStatus: {
-          state: currentConversation.state,
-          token: currentConversation.token,
-          ratingTypeId: currentConversation.rating_type_id
-        }
-      });
-    }
-    
-    // 回答メッセージ
-    allMessages.push({
-      id: Date.now() + Math.random() + index + 1,
-      type: 'company' as const,
-      content: ragResult.answer,
+
+  setMessages(prev => [...prev, firstMessage]);
+
+  setTimeout(() => {
+    // FAQタイルメッセージを作成
+    const faqTilesMessage: Message = {
+      id: Date.now() + Math.random(),
+      type: 'faq_tiles',
+      content: '',
       timestamp: new Date(),
+      faqTilesData: {
+        faqs: question.rag_results!.slice(0, 3).map(result => ({
+          question: result.question,
+          answer: result.answer,
+          related_url: result.related_url,
+          score: result.score
+        }))
+      },
       conversationStatus: {
         state: currentConversation.state,
         token: currentConversation.token,
         ratingTypeId: currentConversation.rating_type_id
       }
-    });
-    
-    // related_urlがある場合は、その回答の直後にリンクメッセージを追加
-    if (ragResult.related_url && ragResult.related_url.trim() !== '') {
-      allMessages.push({
-        id: Date.now() + Math.random() + index + 1000,
-        type: 'company' as const,
-        content: `操作や情報などを詳しく知りたい場合は<a href="${ragResult.related_url}" target="_blank">こちらのページ</a>をご確認ください。`,
-        timestamp: new Date(),
-        conversationStatus: {
-          state: currentConversation.state,
-          token: currentConversation.token,
-          ratingTypeId: currentConversation.rating_type_id
-        }
-      });
-    }
-  });
-  
-  setMessages(prev => [...prev, firstMessage]);
-  
-  setTimeout(() => {
-    setMessages(prev => [...prev, ...allMessages]);
-    
+    };
+
+    setMessages(prev => [...prev, faqTilesMessage]);
+
     // 結果メッセージと評価メッセージを追加
     if (chatSetting) {
       setTimeout(() => {
@@ -217,9 +190,9 @@ const handleTop1Response = (
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
-  
+
   if (!question.answer || !question.rag_results || question.rag_results.length === 0) return;
-  
+
   const firstMessage: Message = {
     id: Date.now() + Math.random(),
     type: 'company',
@@ -231,48 +204,38 @@ const handleTop1Response = (
       ratingTypeId: currentConversation.rating_type_id
     }
   };
-  
+
   setMessages(prev => [...prev, firstMessage]);
-  
+
   setTimeout(() => {
-    const messagesToAdd: Message[] = [];
-    
-    // スコアが0.7以上のRAG結果を全て表示
+    // スコアが0.7以上のRAG結果を全て取得
     const highScoreResults = question.rag_results!.filter(result => result.score >= 0.7);
-    
-    highScoreResults.forEach((result, index) => {
-      const ragMessage: Message = {
-        id: Date.now() + Math.random() + index + 1,
-        type: 'company',
-        content: result.answer,
+
+    if (highScoreResults.length > 0) {
+      // FAQタイルメッセージを作成
+      const faqTilesMessage: Message = {
+        id: Date.now() + Math.random(),
+        type: 'faq_tiles',
+        content: '',
         timestamp: new Date(),
+        faqTilesData: {
+          faqs: highScoreResults.map(result => ({
+            question: result.question,
+            answer: result.answer,
+            related_url: result.related_url,
+            score: result.score
+          }))
+        },
         conversationStatus: {
           state: currentConversation.state,
           token: currentConversation.token,
           ratingTypeId: currentConversation.rating_type_id
         }
       };
-      messagesToAdd.push(ragMessage);
-      
-      // related_urlがある場合はリンクメッセージを追加
-      if (result.related_url && result.related_url.trim() !== '') {
-        const relatedUrlMessage: Message = {
-          id: Date.now() + Math.random() + index + 100,
-          type: 'company',
-          content: `操作や情報などを詳しく知りたい場合は<a href="${result.related_url}" target="_blank">こちらのページ</a>をご確認ください。`,
-          timestamp: new Date(),
-          conversationStatus: {
-            state: currentConversation.state,
-            token: currentConversation.token,
-            ratingTypeId: currentConversation.rating_type_id
-          }
-        };
-        messagesToAdd.push(relatedUrlMessage);
-      }
-    });
-    
-    setMessages(prev => [...prev, ...messagesToAdd]);
-    
+
+      setMessages(prev => [...prev, faqTilesMessage]);
+    }
+
     // 結果メッセージと評価メッセージを追加
     if (chatSetting) {
       setTimeout(() => {
@@ -319,6 +282,8 @@ const handleNormalResponse = (
         content: '',
         timestamp: new Date(),
         optionsData: {
+          questionId: question.id,
+          answerId: question.answer!.id,
           options: question.answer!.options!
         },
         conversationStatus: {
