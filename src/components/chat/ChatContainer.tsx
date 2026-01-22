@@ -11,6 +11,7 @@ import { CompanyMessage } from '../message/company';
 import { LoadingMessage } from '../message/loading';
 import { SeparatorMessage } from '../message/separator';
 import { OptionsMessage } from '../message/options';
+import { FaqTilesMessage } from '../message/faq-tiles';
 import { ChatBackground } from '../background/chat';
 import { VideoBackground } from '../background/video';
 import { Message } from '../../types/chat';
@@ -401,6 +402,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                     iconUrl={chatSetting?.assistant_icon_url}
                     backgroundColor={chatSetting?.assistant_speech_bubble_color}
                     disabled={isCreatingConversation || isReplying}
+                  />
+                ) : message.type === 'faq_tiles' && message.faqTilesData ? (
+                  <FaqTilesMessage
+                    faqs={message.faqTilesData.faqs}
+                    iconUrl={chatSetting?.assistant_icon_url}
+                    backgroundColor={chatSetting?.assistant_speech_bubble_color}
+                    onUrlClick={onUrlClick}
                   />
                 ) : (
                   <Box sx={{ 
