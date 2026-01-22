@@ -251,7 +251,6 @@ const handleNormalResponse = (
   currentConversation: Conversation,
   _chatSetting: ChatSetting | undefined,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _setShowRatingMessage: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   if (!question.answer) return;
