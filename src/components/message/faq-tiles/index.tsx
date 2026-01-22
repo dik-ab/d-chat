@@ -101,7 +101,7 @@ const ExpandIcon = styled('span', {
  */
 export const FaqTilesMessage: React.FC<FaqTilesMessageProps> = ({
   faqs,
-  iconUrl: _iconUrl, // 互換性のため残すが使用しない
+  // iconUrl は互換性のため props に残すが使用しない
   backgroundColor = '#00A79E',
   className = '',
   onUrlClick,
@@ -144,7 +144,7 @@ export const FaqTilesMessage: React.FC<FaqTilesMessageProps> = ({
 
   const parseMessageWithLinks = (text: string) => {
     const regex = /<a\s+href="([^"]+)"[^>]*>(.*?)<\/a>/g;
-    const parts: (string | JSX.Element)[] = [];
+    const parts: (string | React.ReactElement)[] = [];
     let lastIndex = 0;
     let match;
 
@@ -204,7 +204,7 @@ export const FaqTilesMessage: React.FC<FaqTilesMessageProps> = ({
               contentHeight={contentHeights[index] || 0}
             >
               <Box
-                ref={(el) => {
+                ref={(el: HTMLDivElement | null) => {
                   contentRefs.current[index] = el;
                 }}
                 sx={{ paddingLeft: '24px' }}

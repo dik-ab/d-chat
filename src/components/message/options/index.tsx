@@ -103,9 +103,9 @@ const OptionsFooter = styled(Typography)(() => ({
 export const OptionsMessage: React.FC<OptionsMessageProps> = ({
   options,
   questionId,
-  answerId: _answerId, // 将来的に使用する可能性があるため保持
+  // answerId は将来的に使用する可能性があるため props に残すが現在は未使用
   onOptionClick,
-  iconUrl = '/robot.svg',
+  // iconUrl は互換性のため props に残すが使用しない
   backgroundColor = '#00A79E',
   className = '',
   disabled = false,
