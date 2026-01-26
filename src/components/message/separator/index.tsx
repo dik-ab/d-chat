@@ -14,10 +14,12 @@ export const SeparatorMessage: React.FC<SeparatorMessageProps> = ({ message }) =
     <Box
       sx={{
         display: 'flex',
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
         alignItems: 'center',
-        my: 2,
+        my: 3,
         width: '100%',
+        borderTop: isNewSessionMessage ? '1px solid #E0E0E0' : 'none',
+        pt: isNewSessionMessage ? 2 : 0,
       }}
     >
       <Typography
@@ -26,9 +28,8 @@ export const SeparatorMessage: React.FC<SeparatorMessageProps> = ({ message }) =
           fontWeight: isNewSessionMessage ? 400 : 600,
           color: isNewSessionMessage ? '#999999' : '#666666',
           fontSize: '14px',
-          textAlign: 'left',
+          textAlign: 'center',
           whiteSpace: 'pre-line',
-          width: '100%',
         }}
       >
         {message.content}
