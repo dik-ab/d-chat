@@ -363,9 +363,26 @@ const addResultAndRatingMessages = (
             ratingTypeId: currentConversation.rating_type_id
           }
         };
-        
+
         setMessages(prev => [...prev, ratingMessage]);
         setShowRatingMessage(true);
+
+        // セパレーターメッセージを自動で追加
+        setTimeout(() => {
+          const sessionSeparatorMessage: Message = {
+            id: Date.now() + Math.random() + 3000,
+            type: 'separator',
+            content: 'ここから新しいチャット\n（会話内容は引き継がれません）',
+            timestamp: new Date(),
+            conversationStatus: {
+              state: 'final',
+              token: currentConversation.token,
+              ratingTypeId: currentConversation.rating_type_id
+            }
+          };
+
+          setMessages(prev => [...prev, sessionSeparatorMessage]);
+        }, 500);
       }, 500);
     }
   }, 1000);

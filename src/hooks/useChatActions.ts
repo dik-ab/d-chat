@@ -253,15 +253,15 @@ export const useChatActions = ({
           ratingTypeId = 1;
           break;
       }
-      
+
       await rateConversation(
         identifier,
         currentConversation.token,
         ratingTypeId,
         accessTokenData.token
       );
-      
-      // good または bad の評価の場合のみお礼メッセージを追加
+
+      // good または bad の評価の場合、お礼メッセージをセパレーターメッセージの前に挿入
       if (ratingType === 'good' || ratingType === 'bad') {
         const thankYouMessage: Message = {
           id: Date.now() + Math.random(),
@@ -275,26 +275,24 @@ export const useChatActions = ({
           }
         };
 
-        setMessages(prev => [...prev, thankYouMessage]);
+        setMessages(prev => {
+          // セパレーターメッセージを見つける
+          const separatorIndex = prev.findIndex(msg =>
+            msg.type === 'separator' && msg.content.includes('ここから新しいチャット')
+          );
 
-        // 新しいセッション開始を示すメッセージを追加
-        setTimeout(() => {
-          const sessionSeparatorMessage: Message = {
-            id: Date.now() + Math.random(),
-            type: 'separator',
-            content: 'ここから新しいチャット\n（会話内容は引き継がれません）',
-            timestamp: new Date(),
-            conversationStatus: {
-              state: 'final',
-              token: currentConversation.token,
-              ratingTypeId: ratingTypeId
-            }
-          };
+          // セパレーターメッセージが見つかった場合、その前に挿入
+          if (separatorIndex !== -1) {
+            const newMessages = [...prev];
+            newMessages.splice(separatorIndex, 0, thankYouMessage);
+            return newMessages;
+          }
 
-          setMessages(prev => [...prev, sessionSeparatorMessage]);
-        }, 500);
+          // セパレーターメッセージが見つからない場合は最後に追加
+          return [...prev, thankYouMessage];
+        });
       }
-      
+
     } catch (error) {
       console.error('Failed to send rating:', error);
     }
