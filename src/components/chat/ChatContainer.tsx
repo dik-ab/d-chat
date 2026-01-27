@@ -128,27 +128,30 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
     // 最新のメッセージ（新着メッセージ）を取得
     const latestMessage = messages[messages.length - 1];
-    
+
     // 最新メッセージが特定のステータスかチェック
-    const latestMessageHasSpecificStatus = latestMessage.conversationStatus?.state && 
+    const latestMessageHasSpecificStatus = latestMessage.conversationStatus?.state &&
       ['top1', 'top3', 'unmatched'].includes(latestMessage.conversationStatus.state);
-    
+
     // 更問い状態かチェック（reply_waiting状態、またはoptionsメッセージがある場合）
-    const isReplyWaiting = currentConversation?.state === 'reply_waiting' || 
+    const isReplyWaiting = currentConversation?.state === 'reply_waiting' ||
                           (latestMessage.type === 'options' && latestMessage.optionsData);
 
-    if (latestMessageHasSpecificStatus || isReplyWaiting) {
-      
+    // セパレーターメッセージの場合はスクロールしない（位置を維持）
+    const isSeparatorMessage = latestMessage.type === 'separator';
+
+    if (latestMessageHasSpecificStatus || isReplyWaiting || isSeparatorMessage) {
+
       // 最後のユーザーメッセージにスクロール
       if (lastUserMessageId.current && messageRefs.current[lastUserMessageId.current] && chatAreaRef.current) {
         const userMessageElement = messageRefs.current[lastUserMessageId.current];
         const chatArea = chatAreaRef.current;
-        
+
         // userMessageElementがnullでないことを確認
         if (userMessageElement) {
           // ユーザーメッセージの位置を取得
           const userMessageTop = userMessageElement.offsetTop;
-          
+
           // チャットエリアの上部にユーザーメッセージが来るようにスクロール
           chatArea.scrollTop = userMessageTop - 10; // 少し余白を持たせる
         }
