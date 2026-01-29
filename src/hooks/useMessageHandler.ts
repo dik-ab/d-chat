@@ -340,8 +340,8 @@ const addResultAndRatingMessages = (
     };
     
     setMessages(prev => [...prev, resultMessageObj]);
-    
-    // unmatchedの時は評価メッセージを表示しない
+
+    // unmatchedの時は評価メッセージを表示しないが、セパレーターメッセージは表示する
     if (currentConversation.state !== 'unmatched') {
       setTimeout(() => {
         const ratingId = Date.now() + Math.random() + 2000;
@@ -383,6 +383,23 @@ const addResultAndRatingMessages = (
 
           setMessages(prev => [...prev, sessionSeparatorMessage]);
         }, 500);
+      }, 500);
+    } else {
+      // unmatchedの場合もセパレーターメッセージを表示
+      setTimeout(() => {
+        const sessionSeparatorMessage: Message = {
+          id: Date.now() + Math.random() + 3000,
+          type: 'separator',
+          content: 'ここから新しいチャット\n（会話内容は引き継がれません）',
+          timestamp: new Date(),
+          conversationStatus: {
+            state: 'final',
+            token: currentConversation.token,
+            ratingTypeId: currentConversation.rating_type_id
+          }
+        };
+
+        setMessages(prev => [...prev, sessionSeparatorMessage]);
       }, 500);
     }
   }, 1000);
