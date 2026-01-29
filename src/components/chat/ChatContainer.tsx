@@ -56,6 +56,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   const lastUserMessageId = useRef<number | null>(null);
+  const lastMessageIdRef = useRef<number | null>(null);
   const messageInputRef = useRef<MessageInputRef>(null);
   const [hasInputError, setHasInputError] = useState(false);
 
@@ -128,6 +129,15 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
     // 最新のメッセージ（新着メッセージ）を取得
     const latestMessage = messages[messages.length - 1];
+
+    // 最後のメッセージIDが変わっていない場合はスクロールしない
+    // （評価ボタン押下時に、セパレーターの前にお礼メッセージが挿入される場合など）
+    if (lastMessageIdRef.current === latestMessage.id) {
+      return;
+    }
+
+    // 最後のメッセージIDを更新
+    lastMessageIdRef.current = latestMessage.id;
 
     // 最新メッセージが特定のステータスかチェック
     const latestMessageHasSpecificStatus = latestMessage.conversationStatus?.state &&
