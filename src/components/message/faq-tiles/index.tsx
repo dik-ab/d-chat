@@ -136,10 +136,10 @@ export const FaqTilesMessage: React.FC<FaqTilesMessageProps> = ({
   }, [faqs]);
 
   const handleUrlClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
-    e.preventDefault();
     if (onUrlClick) {
       onUrlClick(url);
     }
+    // e.preventDefault()を削除してデフォルトのリンク動作を許可
   };
 
   const parseMessageWithLinks = (text: string) => {
@@ -211,7 +211,7 @@ export const FaqTilesMessage: React.FC<FaqTilesMessageProps> = ({
               >
                 {/* 回答 */}
                 <AnswerBubble bgColor={backgroundColor}>
-                  <AnswerText>{faq.answer}</AnswerText>
+                  <AnswerText>{parseMessageWithLinks(faq.answer)}</AnswerText>
                 </AnswerBubble>
 
                 {/* 関連URL */}
