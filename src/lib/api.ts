@@ -197,3 +197,19 @@ export async function trackUrlAccess(
     }),
   });
 }
+
+// 080. 回答選択肢の選択
+export async function selectOption(
+  identifier: string,
+  token: string,
+  questionId: number,
+  optionId: number,
+  accessToken: string
+): Promise<void> {
+  return apiRequest<void>(`/spaces/${identifier}/conversations/${token}/questions/${questionId}/answer/options/${optionId}/selected`, {
+    method: 'PUT',
+    headers: {
+      'X-Authorization': accessToken,
+    },
+  });
+}
