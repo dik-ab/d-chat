@@ -37,7 +37,7 @@ function ChatPage() {
   });
   
   // チャットアクション
-  const { handleSendMessage, handleRating, handleCloseChat } = useChatActions({
+  const { handleSendMessage, handleRating, handleCloseChat, handleOptionSelect } = useChatActions({
     identifier: identifier || 'livepass_test_chatui',
     accessTokenData: chatState.accessTokenData,
     currentConversation: chatState.currentConversation,
@@ -82,6 +82,7 @@ function ChatPage() {
         onRating={handleRating}
         onCloseChat={handleCloseChat}
         onUrlClick={trackUrl}
+        onOptionSelect={handleOptionSelect}
       />
     </div>
   );
@@ -107,6 +108,7 @@ export default function Home() {
             onRating={() => {}}
             onCloseChat={() => {}}
             onUrlClick={() => {}}
+            onOptionSelect={() => {}}
           />
         </div>
       }>

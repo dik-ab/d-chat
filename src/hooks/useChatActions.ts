@@ -1,7 +1,7 @@
 'use client';
 
 import { Message } from '@/types/chat';
-import { rateConversation, ApiErrorClass } from '../lib/api';
+import { rateConversation, selectOption, ApiErrorClass } from '../lib/api';
 import { Conversation, AccessTokenResponse, ChatSetting } from '../types/api';
 
 interface UseChatActionsProps {
@@ -253,15 +253,15 @@ export const useChatActions = ({
           ratingTypeId = 1;
           break;
       }
-      
+
       await rateConversation(
         identifier,
         currentConversation.token,
         ratingTypeId,
         accessTokenData.token
       );
-      
-      // good または bad の評価の場合のみお礼メッセージを追加
+
+      // good または bad の評価の場合、お礼メッセージをセパレーターメッセージの前に挿入
       if (ratingType === 'good' || ratingType === 'bad') {
         const thankYouMessage: Message = {
           id: Date.now() + Math.random(),
@@ -274,10 +274,25 @@ export const useChatActions = ({
             ratingTypeId: ratingTypeId
           }
         };
-        
-        setMessages(prev => [...prev, thankYouMessage]);
+
+        setMessages(prev => {
+          // セパレーターメッセージを見つける
+          const separatorIndex = prev.findIndex(msg =>
+            msg.type === 'separator' && msg.content.includes('ここから新しいチャット')
+          );
+
+          // セパレーターメッセージが見つかった場合、その前に挿入
+          if (separatorIndex !== -1) {
+            const newMessages = [...prev];
+            newMessages.splice(separatorIndex, 0, thankYouMessage);
+            return newMessages;
+          }
+
+          // セパレーターメッセージが見つからない場合は最後に追加
+          return [...prev, thankYouMessage];
+        });
       }
-      
+
     } catch (error) {
       console.error('Failed to send rating:', error);
     }
@@ -289,9 +304,35 @@ export const useChatActions = ({
     }
   };
 
+  const handleOptionSelect = async (questionId: number, optionId: number) => {
+    if (!currentConversation?.token || !accessTokenData?.token) {
+      return;
+    }
+
+    try {
+      await selectOption(
+        identifier,
+        currentConversation.token,
+        questionId,
+        optionId,
+        accessTokenData.token
+      );
+
+      console.log('[DEBUG] Option selected:', {
+        questionId,
+        optionId,
+        conversationToken: currentConversation.token
+      });
+    } catch (error) {
+      console.error('Failed to track option selection:', error);
+      // エラーが発生しても選択肢のタップは続行（ユーザー体験を妨げない）
+    }
+  };
+
   return {
     handleSendMessage,
     handleRating,
     handleCloseChat,
+    handleOptionSelect,
   };
 };
