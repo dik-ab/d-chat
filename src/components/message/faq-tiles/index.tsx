@@ -189,6 +189,7 @@ export const FaqTilesMessage: React.FC<FaqTilesMessageProps> = ({
           <Box key={index} sx={{ width: '100%' }}>
             {/* 質問ボタン */}
             <QuestionButton
+              id={`faq-question-${index}`}
               bgColor={backgroundColor}
               onClick={() => toggleExpand(index)}
             >
