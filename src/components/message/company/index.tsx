@@ -114,7 +114,34 @@ const RichHtmlContent = styled(Box)(() => ({
       opacity: 0.8,
     },
   },
+  '& .castex-video-wrapper': {
+    margin: '8px 0',
+    display: 'flex',
+    justifyContent: 'center',
+    '& video': {
+      width: '80%',
+      maxWidth: '100%',
+      borderRadius: '8px',
+      backgroundColor: '#000',
+    },
+  },
 }));
+
+// <castex>タグを<video>タグに変換する関数
+const convertCastexToVideo = (message: string): string => {
+  return message.replace(
+    /<castex>(.*?)<\/castex>/gi,
+    (_match, url: string) => {
+      const trimmedUrl = url.trim();
+      return `<div class="castex-video-wrapper"><video src="${trimmedUrl}" controls playsinline preload="metadata" /></div>`;
+    }
+  );
+};
+
+// メッセージに<castex>タグが含まれているかチェック
+const containsCastexTag = (message: string): boolean => {
+  return /<castex>/i.test(message);
+};
 
 // メッセージにHTMLブロック要素が含まれているかチェック
 const containsHtmlBlockTags = (message: string): boolean => {
@@ -253,8 +280,8 @@ export const CompanyMessage: React.FC<CompanyMessageProps> = ({
             onRating={ratingData.onRating}
             onUrlClick={onUrlClick}
           />
-        ) : containsHtmlBlockTags(message) ? (
-          <RichHtmlContent dangerouslySetInnerHTML={{ __html: message }} />
+        ) : (containsCastexTag(message) || containsHtmlBlockTags(message)) ? (
+          <RichHtmlContent dangerouslySetInnerHTML={{ __html: containsCastexTag(message) ? convertCastexToVideo(message) : message }} />
         ) : (
           <MessageText>
             {parseMessageWithLinks(message, onUrlClick)}
