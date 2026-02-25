@@ -32,17 +32,12 @@ const MessageContainer = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'flex-start',
   marginBottom: '8px',
-  paddingLeft: '48px',
+  paddingLeft: '0',
 }));
 
-const MessageBubble = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'bgColor',
-})<{ bgColor: string }>(({ bgColor }) => ({
+const MessageBubble = styled(Box)(() => ({
   position: 'relative',
   width: '100%',
-  backgroundColor: bgColor,
-  borderRadius: '32px',
-  padding: '16px',
   boxSizing: 'border-box',
 }));
 
@@ -51,22 +46,22 @@ const OptionsHeader = styled(Typography)(() => ({
   fontSize: '14px',
   fontWeight: 500,
   lineHeight: '21px',
-  color: '#FFFFFF',
+  color: '#333333',
   marginBottom: '8px',
 }));
 
 const OptionButton = styled('div', {
   shouldForwardProp: (prop) => prop !== 'disabled',
 })<{ disabled?: boolean }>(({ disabled }) => ({
-  backgroundColor: '#FFFFFF',
+  backgroundColor: '#F5F5F5',
   borderRadius: '16px',
+  border: '1px solid #E0E0E0',
   padding: '8px 16px',
   cursor: disabled ? 'not-allowed' : 'pointer',
   transition: 'all 0.2s ease',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  width: '100%',
   opacity: disabled ? 0.6 : 1,
   '&:hover': disabled ? {} : {
     backgroundColor: '#F5F5F5',
@@ -90,8 +85,7 @@ const OptionsFooter = styled(Typography)(() => ({
   fontSize: '12px',
   fontWeight: 700,
   lineHeight: '18px',
-  color: '#FFFFFF',
-  opacity: 0.8,
+  color: '#666666',
   marginTop: '8px',
 }));
 
@@ -105,16 +99,15 @@ export const OptionsMessage: React.FC<OptionsMessageProps> = ({
   questionId,
   // answerId は将来的に使用する可能性があるため props に残すが現在は未使用
   onOptionClick,
-  // iconUrl は互換性のため props に残すが使用しない
-  backgroundColor = '#00A79E',
+  // iconUrl, backgroundColor は互換性のため props に残すが現在は未使用
   className = '',
   disabled = false,
 }) => {
   return (
     <MessageContainer className={className}>
-      <MessageBubble bgColor={backgroundColor}>
+      <MessageBubble>
         <OptionsHeader>以下の選択肢の中に該当するものはありますか？</OptionsHeader>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '6px' }}>
           {options.map((option) => (
             <OptionButton
               key={option.id}
