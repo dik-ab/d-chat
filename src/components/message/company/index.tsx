@@ -12,6 +12,8 @@ interface CompanyMessageProps {
   iconUrl?: string;
   /** クラス名 */
   className?: string;
+  /** アイコンを非表示にするか */
+  hideIcon?: boolean;
   /** 評価ボタンの設定 */
   ratingData?: {
     matchedMessage: string;
@@ -27,36 +29,18 @@ interface CompanyMessageProps {
 const MessageContainer = styled(Box)(() => ({
   position: 'relative',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'flex-start',
   marginBottom: '8px',
   maxWidth: '100%',
-  gap: '16px', // アイコンとメッセージの間にスペースを追加
+  gap: '8px', // アイコンとメッセージの間にスペース
 }));
 
-const MessageBubble = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'bgColor',
-})<{ bgColor: string }>(({ bgColor }) => ({
+const MessageBubble = styled(Box)(() => ({
   position: 'relative',
   width: 'auto',
   maxWidth: '100%',
-  backgroundColor: bgColor,
-  borderRadius: '32px',
-  padding: '16px',
   boxSizing: 'border-box',
-  
-  // 吹き出しの三角形（右上が頂点の二等辺三角形、左辺がチャットUIに接続）
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: '10px', // チャットの上から20%の位置
-    left: '-5px', // チャットから飛び出す
-    width: '16px',
-    height: '32px',
-    backgroundColor: bgColor,
-    clipPath: 'polygon(100% 0%, 0% 50%, 100% 100%)', // 右上頂点の三角形
-    borderRadius: '3px',
-    transform: 'rotate(135deg)',
-  },
 }));
 
 const MessageText = styled(Typography)(() => ({
@@ -64,11 +48,11 @@ const MessageText = styled(Typography)(() => ({
   fontSize: '14px',
   fontWeight: 500,
   lineHeight: '21px',
-  color: '#FFFFFF',
+  color: '#333333',
   wordBreak: 'break-word',
   whiteSpace: 'pre-wrap',
   '& a': {
-    color: '#FFFFFF',
+    color: '#1976D2',
     textDecoration: 'underline',
     '&:hover': {
       textDecoration: 'underline',
@@ -76,6 +60,66 @@ const MessageText = styled(Typography)(() => ({
     },
   },
 }));
+
+// リッチHTMLコンテンツ用のスタイル付きコンテナ
+const RichHtmlContent = styled(Box)(() => ({
+  fontFamily: '"Noto Sans", sans-serif',
+  fontSize: '14px',
+  fontWeight: 500,
+  lineHeight: '21px',
+  color: '#333333',
+  wordBreak: 'break-word',
+  '& p': {
+    margin: '0 0 8px 0',
+    '&:last-child': {
+      marginBottom: 0,
+    },
+  },
+  '& h3': {
+    fontSize: '14px',
+    fontWeight: 700,
+    margin: '12px 0 8px 0',
+  },
+  '& ul': {
+    margin: '4px 0 8px 0',
+    paddingLeft: '20px',
+    listStyleType: 'disc',
+  },
+  '& ol': {
+    margin: '4px 0 8px 0',
+    paddingLeft: '20px',
+    listStyleType: 'decimal',
+  },
+  '& li': {
+    marginBottom: '4px',
+    '& ol': {
+      marginTop: '4px',
+    },
+  },
+  '& strong': {
+    fontWeight: 700,
+  },
+  '& hr': {
+    border: 'none',
+    borderTop: '1px solid #E0E0E0',
+    margin: '12px 0',
+  },
+  '& br': {
+    lineHeight: '21px',
+  },
+  '& a': {
+    color: '#1976D2',
+    textDecoration: 'underline',
+    '&:hover': {
+      opacity: 0.8,
+    },
+  },
+}));
+
+// メッセージにHTMLブロック要素が含まれているかチェック
+const containsHtmlBlockTags = (message: string): boolean => {
+  return /<(p|ul|ol|li|h[1-6]|strong|br|hr|div|table)\b/i.test(message);
+};
 
 // HTMLの<a>タグと<span>タグを解析してReactコンポーネントに変換する関数
 const parseMessageWithLinks = (message: string, onUrlClick?: (url: string) => void): React.ReactNode => {
@@ -177,33 +221,28 @@ const IconImage = styled('img')(() => ({
  * 企業メッセージコンポーネント
  * 
  * チャットで企業側が送信したメッセージを表示するコンポーネントです。
- * アイコン付きで吹き出しデザインになっています。
- * 
+ * 左上にアイコン、その下にテキストを表示するシンプルなレイアウトです。
+ *
  * 仕様:
- * - 背景色: ChatSettingから取得
  * - アイコン: ChatSettingのURLから取得
- * - テキスト色: 白
- * - 幅: 100%（フルワイド）
- * - 高さ: コンテンツに応じて自動調整
- * - border-radius: 32px
- * - padding: 16px
+ * - テキスト色: #333333
  * - フォント: Noto Sans, 14px, weight 500
  * - 行間: 21px
- * - 左寄せ表示（アイコン付き）
- * - 吹き出し三角形: 左上、radius 3px
+ * - 左寄せ表示（アイコンが上、テキストが下の縦並び）
  */
 export const CompanyMessage: React.FC<CompanyMessageProps> = ({
   message,
-  backgroundColor = '#00A79E',
+  // backgroundColor は互換性のため props に残すが現在は未使用
   iconUrl = '/robot.svg',
   className = '',
+  hideIcon = false,
   ratingData,
   onUrlClick,
 }) => {
   return (
     <MessageContainer className={className}>
-      <IconImage src={iconUrl} alt="Assistant" />
-      <MessageBubble bgColor={backgroundColor}>
+      {!hideIcon && <IconImage src={iconUrl} alt="Assistant" />}
+      <MessageBubble>
         {/* 通常のメッセージまたは評価メッセージ */}
         {ratingData ? (
           <RatingButtons
@@ -214,6 +253,8 @@ export const CompanyMessage: React.FC<CompanyMessageProps> = ({
             onRating={ratingData.onRating}
             onUrlClick={onUrlClick}
           />
+        ) : containsHtmlBlockTags(message) ? (
+          <RichHtmlContent dangerouslySetInnerHTML={{ __html: message }} />
         ) : (
           <MessageText>
             {parseMessageWithLinks(message, onUrlClick)}
