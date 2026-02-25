@@ -1,0 +1,1795 @@
+<!-- ========================================
+     GTM カスタムHTML - Figma完全準拠版 v6.9.0
+     
+     v6.9.0 修正点:
+     
+     【トリガー変更】
+     - 両シナリオともscroll_return方式に統一
+     - ページ最下部(95%)まで行って戻ったら(80%以下)バナー表示
+     
+     【文言修正】
+     - 自動入力時のプレースホルダー文言を簡潔に変更
+     
+======================================== -->
+<style>
+/* ========================================
+   グローバル設定 - 横スクロール完全防止
+======================================== */
+.wl-popup,
+.wl-popup *,
+.wl-chat-overlay,
+.wl-chat-overlay * {
+  box-sizing: border-box;
+}
+
+:root {
+  /* ポップアップ用（ティール系） */
+  --wl-popup-grad-1: #31B6C5;
+  --wl-popup-grad-2: #3BA2A7;
+  --wl-popup-grad-3: #30A0A2;
+  
+  /* 人物セクション用（薄いグレー〜白） */
+  --wl-person-grad-1: #F8F8F8;
+  --wl-person-grad-2: #F5F5F5;
+  
+  /* チャットセクション用（水色系） */
+  --wl-chat-grad-1: #E8F4F6;
+  --wl-chat-grad-2: #E0EFEE;
+  --wl-chat-grad-3: #D5EAEC;
+  
+  /* アクセント */
+  --wl-docomo-red: #CC0033;
+  --wl-docomo-red-hover: #B8002E;
+  --wl-docomo-red-light: rgba(204, 0, 51, 0.05);
+  --wl-docomo-red-active: rgba(204, 0, 51, 0.1);
+  
+  /* 吹き出し */
+  --wl-bubble-bot: #FFFFFF;
+  --wl-bubble-user: #BCDADE;
+  
+  /* テキスト */
+  --wl-text-primary: #333333;
+  --wl-text-secondary: #666666;
+  --wl-text-light: #888888;
+  
+  /* ボーダー */
+  --wl-border-light: #E5E5E5;
+  --wl-border-gray: #DDDDDD;
+  
+  /* シャドウ */
+  --wl-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --wl-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --wl-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --wl-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+  --wl-shadow-bubble: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --wl-shadow-bubble-user: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --wl-shadow-btn-outline: 0 2px 6px rgba(0, 0, 0, 0.1);
+  
+  /* 選択肢UI専用トークン */
+  --wl-choice-bg: #FFFFFF;
+  --wl-choice-border-width: 2px;
+  --wl-choice-border-color: var(--wl-docomo-red);
+  --wl-choice-border-color-disabled: #CCCCCC;
+  --wl-choice-text-color: var(--wl-docomo-red);
+  --wl-choice-text-color-disabled: var(--wl-text-light);
+  --wl-choice-font-weight: 500;
+  --wl-choice-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --wl-choice-shadow-hover: 0 3px 6px rgba(0, 0, 0, 0.08);
+  --wl-choice-shadow-active: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --wl-choice-padding: 12px 16px;
+  --wl-choice-radius: 8px;
+  
+  /* 白いザブトン */
+  --wl-choices-bg: #FFFFFF;
+  --wl-choices-radius: 12px;
+  --wl-choices-padding: 16px;
+  --wl-choices-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  
+  /* border-radius */
+  --wl-radius-xs: 4px;
+  --wl-radius-sm: 8px;
+  --wl-radius-md: 12px;
+  --wl-radius-lg: 16px;
+  --wl-radius-xl: 20px;
+}
+
+.wl-hidden { display: none !important; }
+
+/* ========================================
+   ポップアップ
+======================================== */
+.wl-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 99998;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.wl-popup.wl-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.wl-popup-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(180deg, var(--wl-popup-grad-1) 0%, var(--wl-popup-grad-2) 50%, var(--wl-popup-grad-3) 100%);
+  border-radius: var(--wl-radius-md);
+  padding: 12px 16px;
+  box-shadow: 0 4px 16px rgba(49, 182, 197, 0.25);
+  cursor: pointer;
+  max-width: 300px;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: box-shadow 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wl-popup-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(49, 182, 197, 0.35);
+  }
+}
+
+.wl-popup-container:active {
+  opacity: 0.9;
+}
+
+.wl-popup-badge {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 14px;
+  height: 14px;
+  background: var(--wl-docomo-red);
+  border-radius: 50%;
+  border: 2px solid #fff;
+  animation: wl-pulse 2s infinite;
+}
+
+.wl-popup-badge.wl-hidden { display: none; }
+
+@keyframes wl-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.wl-popup-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.wl-popup-text {
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 767px) {
+  .wl-popup {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+  }
+  .wl-popup-container {
+    max-width: none;
+  }
+}
+
+/* ========================================
+   オーバーレイ
+======================================== */
+.wl-chat-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.wl-chat-overlay.wl-active {
+  display: flex;
+}
+
+@media (max-width: 767px) {
+  .wl-chat-overlay {
+    background: rgba(0, 0, 0, 0.25);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    align-items: flex-end;
+    justify-content: center;
+  }
+}
+
+/* ========================================
+   チャットコンテナ - 高さ固定
+======================================== */
+.wl-chat-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+  width: 100%;
+  max-width: 480px;
+  border-radius: var(--wl-radius-xl);
+  box-shadow: var(--wl-shadow-lg);
+  transform-origin: bottom center;
+  max-height: 0;
+  opacity: 0;
+  transform: scaleY(0);
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease,
+              transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wl-chat-container.wl-expanded {
+  height: 680px;
+  max-height: 680px;
+  min-height: 680px;
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+@media (max-width: 767px) {
+  .wl-chat-container {
+    max-width: none;
+    width: 100%;
+    border-radius: var(--wl-radius-xl) var(--wl-radius-xl) 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  }
+  
+  .wl-chat-container.wl-expanded {
+    height: 85vh;
+    height: 85dvh;
+    max-height: 85vh;
+    max-height: 85dvh;
+    min-height: 480px;
+  }
+}
+
+/* ========================================
+   ヘッダー
+======================================== */
+.wl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--wl-border-light);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+@media (max-width: 767px) {
+  .wl-header {
+    padding-top: calc(14px + env(safe-area-inset-top, 0));
+  }
+}
+
+.wl-header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--wl-text-primary);
+  letter-spacing: 0.02em;
+}
+
+/* ========================================
+   ヘッダーボタン
+======================================== */
+.wl-menu-open-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid var(--wl-docomo-red);
+  border-radius: var(--wl-radius-sm);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--wl-docomo-red);
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  box-shadow: var(--wl-shadow-btn-outline);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wl-menu-open-btn:hover {
+    background: var(--wl-docomo-red-light);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.wl-menu-open-btn:active {
+  background: var(--wl-docomo-red-active);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.wl-menu-open-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15), var(--wl-shadow-btn-outline);
+}
+
+.wl-menu-open-btn .wl-arrow {
+  font-size: 8px;
+  color: var(--wl-docomo-red);
+  transition: transform 0.2s ease;
+  line-height: 1;
+}
+
+.wl-menu-open-btn.wl-expanded .wl-arrow {
+  transform: rotate(180deg);
+}
+
+/* ========================================
+   メニュードロップダウン
+======================================== */
+.wl-menu-dropdown {
+  position: absolute;
+  top: 56px;
+  right: 12px;
+  width: 240px;
+  background: #fff;
+  border-radius: var(--wl-radius-md);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 6px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+}
+
+.wl-menu-dropdown.wl-expanded {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.wl-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--wl-text-primary);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wl-menu-item:hover {
+    background: #F8F8F8;
+  }
+}
+
+.wl-menu-item:active {
+  background: #F0F0F0;
+}
+
+.wl-menu-item-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wl-menu-item-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ========================================
+   メインエリア
+======================================== */
+.wl-chat-main {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ========================================
+   人物エリア（上部固定）
+======================================== */
+.wl-person-area {
+  display: flex;
+  justify-content: center;
+  padding: 6px 16px 0;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, var(--wl-person-grad-1) 0%, var(--wl-person-grad-2) 100%);
+}
+
+.wl-person-image {
+  width: 88px;
+  height: auto;
+  max-height: 88px;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}
+
+@media (max-width: 767px) {
+  .wl-person-area {
+    padding: 4px 12px 0;
+  }
+  .wl-person-image {
+    width: 80px;
+    max-height: 80px;
+  }
+}
+
+/* ========================================
+   スクロール可能エリア
+======================================== */
+.wl-scroll-area {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--wl-chat-grad-1) 0%, var(--wl-chat-grad-2) 50%, var(--wl-chat-grad-3) 100%);
+}
+
+@media (max-width: 767px) {
+  .wl-scroll-area {
+    padding: 10px 12px 14px;
+  }
+}
+
+/* ========================================
+   メッセージエリア
+======================================== */
+.wl-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+.wl-message {
+  display: flex;
+  animation: wl-fade-in 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+}
+
+@keyframes wl-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================
+   ボットメッセージ
+======================================== */
+.wl-message.wl-bot {
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+}
+
+.wl-message.wl-bot .wl-bubble {
+  background: var(--wl-bubble-bot);
+  border-radius: var(--wl-radius-md);
+  padding: 14px 16px;
+  box-shadow: var(--wl-shadow-bubble);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--wl-text-primary);
+  width: 100%;
+  max-width: 100%;
+  letter-spacing: 0.01em;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ========================================
+   ユーザーメッセージ
+======================================== */
+.wl-message.wl-user {
+  justify-content: flex-end;
+}
+
+.wl-message.wl-user .wl-bubble {
+  background: var(--wl-bubble-user);
+  border-radius: var(--wl-radius-md) 0 var(--wl-radius-md) var(--wl-radius-md);
+  padding: 10px 14px;
+  box-shadow: var(--wl-shadow-bubble-user);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--wl-text-primary);
+  max-width: 80%;
+}
+
+/* ========================================
+   リンクボタン
+======================================== */
+.wl-response-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid var(--wl-docomo-red);
+  color: var(--wl-text-primary) !important;
+  text-decoration: none;
+  border-radius: var(--wl-radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color 0.15s ease;
+  width: 100%;
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.wl-response-link:visited {
+  color: var(--wl-text-primary) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wl-response-link:hover {
+    background: var(--wl-docomo-red-light);
+  }
+}
+
+.wl-response-link:active {
+  background: var(--wl-docomo-red-active);
+}
+
+/* ========================================
+   選択肢エリア - 白いザブトン
+======================================== */
+.wl-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  background: var(--wl-choices-bg);
+  border-radius: var(--wl-choices-radius);
+  padding: var(--wl-choices-padding);
+  box-shadow: var(--wl-choices-shadow);
+  animation: wl-slide-up 0.35s ease;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.wl-choices.wl-no-bg {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 16px 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  align-items: center;
+  min-height: 60px;
+}
+
+@keyframes wl-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================
+   選択肢ボタン
+======================================== */
+.wl-choice-btn {
+  background: var(--wl-choice-bg);
+  border: var(--wl-choice-border-width) solid var(--wl-choice-border-color);
+  border-radius: var(--wl-choice-radius);
+  padding: var(--wl-choice-padding);
+  font-size: 14px;
+  font-weight: var(--wl-choice-font-weight);
+  color: var(--wl-choice-text-color);
+  cursor: pointer;
+  text-align: center;
+  outline: none;
+  line-height: 1.4;
+  box-shadow: var(--wl-choice-shadow);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wl-choice-btn:hover {
+    background: var(--wl-docomo-red-light);
+    box-shadow: var(--wl-choice-shadow-hover);
+  }
+}
+
+.wl-choice-btn:active {
+  background: var(--wl-docomo-red-active);
+  box-shadow: var(--wl-choice-shadow-active);
+}
+
+.wl-choice-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+}
+
+.wl-choice-btn.wl-selected,
+.wl-choice-btn:disabled {
+  background: #F5F5F5;
+  border-color: var(--wl-choice-border-color-disabled);
+  color: var(--wl-choice-text-color-disabled);
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* CTA「別の質問をする」 */
+.wl-primary-cta {
+  background: var(--wl-docomo-red);
+  border: none;
+  border-radius: var(--wl-radius-sm);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: var(--wl-shadow-sm);
+  margin: 0 auto;
+  display: block;
+  min-width: 140px;
+  width: auto;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wl-primary-cta:hover {
+    background: var(--wl-docomo-red-hover);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.wl-primary-cta:active {
+  background: var(--wl-docomo-red-hover);
+  box-shadow: var(--wl-shadow-xs);
+}
+
+.wl-primary-cta:focus-visible {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 戻るボタン */
+.wl-back-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #BBBBBB;
+  border-radius: var(--wl-radius-sm);
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--wl-text-secondary);
+  cursor: pointer;
+  text-align: center;
+  outline: none;
+  margin-top: 6px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wl-back-btn:hover {
+    background: #fff;
+    border-color: #999999;
+  }
+}
+
+.wl-back-btn:active {
+  background: #F5F5F5;
+  border-color: #999999;
+}
+
+/* ========================================
+   入力エリア
+======================================== */
+.wl-input-area {
+  display: none;
+  gap: 8px;
+  align-items: flex-end;
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--wl-radius-sm);
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+.wl-input-area.wl-active {
+  display: flex;
+}
+
+.wl-input {
+  flex: 1;
+  min-height: 40px;
+  max-height: 100px;
+  padding: 8px 12px;
+  border: 1px solid var(--wl-border-gray);
+  border-radius: var(--wl-radius-sm);
+  font-size: 16px;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  color: var(--wl-text-primary);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wl-input::placeholder {
+  color: var(--wl-text-light);
+}
+
+.wl-input:focus {
+  border-color: var(--wl-docomo-red);
+  box-shadow: 0 0 0 2px rgba(204, 0, 51, 0.1);
+}
+
+.wl-send-btn {
+  width: 40px;
+  height: 40px;
+  background: var(--wl-docomo-red);
+  border: none;
+  border-radius: var(--wl-radius-sm);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wl-send-btn:hover {
+    background: var(--wl-docomo-red-hover);
+  }
+}
+
+.wl-send-btn:active {
+  background: var(--wl-docomo-red-hover);
+}
+
+/* ========================================
+   フッター
+======================================== */
+.wl-footer {
+  background: #fff;
+  border-top: 2px solid var(--wl-docomo-red);
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .wl-footer {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+  }
+}
+
+.wl-close-chat-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--wl-text-primary);
+  cursor: pointer;
+  padding: 4px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wl-close-chat-btn:hover {
+    color: var(--wl-text-secondary);
+  }
+}
+
+.wl-close-chat-btn:active {
+  color: var(--wl-text-secondary);
+  opacity: 0.8;
+}
+
+.wl-close-chat-btn .wl-arrow-down {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.wl-close-chat-btn .wl-arrow-down svg {
+  width: 12px;
+  height: 14px;
+}
+</style>
+
+<script>
+(function() {
+  'use strict';
+
+  var DEBUG = true;
+  
+  var CONFIG = {
+    avatarUrl: 'https://d-lp.pages.dev/wearable/assets/woman_livepass.png',
+    title: 'QAアシスタント'
+  };
+
+  function log() {
+    if (DEBUG && console && console.log) {
+      console.log.apply(console, ['[WL-Chat v6.9]'].concat(Array.prototype.slice.call(arguments)));
+    }
+  }
+
+  // ========================================
+  // シナリオデータ
+  // ========================================
+  var SCENARIO_DATA = {
+    wearable: {
+      id: 'wearable',
+      urlPattern: '/wearable/',
+      excludePatterns: ['/onenumberservice'],
+      popup: { message: 'スマートウォッチ選びに迷ったら、こちらからどうぞ' },
+      trigger: { type: 'scroll_return', scrollBottom: 0.95, scrollReturn: 0.8, fallbackDelay: 60000, reShowDelay: 30000 },
+      menu: [
+        { id: 'scene', icon: 'link', text: '便利な使い方のシーンはこちら', url: 'https://ssw.web.docomo.ne.jp/wearable/scene/' },
+        { id: 'onenumber', icon: 'link', text: 'ワンナンバーサービスとは', url: 'https://ssw.web.docomo.ne.jp/wearable/onenumberservice/' },
+        { id: 'shop', icon: 'shop', text: 'docomo OnlineShop', url: 'https://onlineshop.docomo.ne.jp/' },
+        { id: 'faq', icon: 'question', text: 'よくあるご質問', url: 'https://ssw.web.docomo.ne.jp/wearable/faq/' }
+      ],
+      nodes: {
+        'Q0': {
+          type: 'question',
+          message: 'スマートウォッチ、もうお使いですか？',
+          choices: [
+            { id: '1', text: 'これから買おうと思っている', next: 'Q0-1' },
+            { id: '2', text: 'すでにスマートウォッチは持っている', next: 'Q0-2' },
+            { id: '3', text: 'まだよくわからない／比較検討中', next: 'A3' }
+          ]
+        },
+        
+        'Q0-1': {
+          type: 'question',
+          message: 'どんな使い方をしたいですか？',
+          choices: [
+            { id: '1-1', text: '健康管理や睡眠ログ', next: 'A1-1' },
+            { id: '1-2', text: '通話やメッセージの確認', next: 'A1-2' },
+            { id: '1-3', text: 'ランニングやアクティビティ記録', next: 'A1-3' },
+            { id: '1-4', text: '特に決まっていない／\nいろいろ見てみたい', next: 'A1-4' }
+          ],
+          showBack: true
+        },
+        
+        'Q0-2': {
+          type: 'question',
+          message: 'ワンナンバーはご契約済みですか？',
+          choices: [
+            { id: '2-1', text: 'はい（契約済み）', next: 'B2-1' },
+            { id: '2-2', text: 'いいえ／分からない', next: 'B2-2' }
+          ],
+          showBack: true
+        },
+        
+        'A1-1': {
+          type: 'response',
+          message: '日々の歩数や体調をスマホで管理できたら便利ですよね。dヘルスケアとの連携で、そんな使い方も可能です。\n\n対応している端末もチェックしてみてくださいね。\n\n対応端末の中から気になるモデルがあれば、そのままオンラインショップで購入もできます。',
+          links: [
+            { text: '便利な使い方はこちら', url: 'https://ssw.web.docomo.ne.jp/wearable/scene/' },
+            { text: '対応端末を見る', url: 'https://ssw.web.docomo.ne.jp/wearable/device/' },
+            { text: 'docomo Online Shopを見る', url: 'https://onlineshop.docomo.ne.jp/top-ols?utm_source=onenumber&utm_medium=owned&utm_campaign=ons_202502_wearable-top&utm_content=01' }
+          ],
+          showRestart: true
+        },
+        
+        'A1-2': {
+          type: 'response',
+          message: 'スマートウォッチがあれば、スマホを取り出さずに通話やメッセージの確認ができて便利ですよね。ワンナンバーサービスを使えば、スマホと同じ番号で通話も可能になります。\n\nその機能に対応したスマートウォッチはこちらからご確認いただけます。\n\n対応機種の中から気になるモデルがあれば、オンラインショップでそのまま購入も可能です。',
+          links: [
+            { text: 'ワンナンバーサービスについて詳しく見る', url: 'https://ssw.web.docomo.ne.jp/wearable/onenumberservice/' },
+            { text: '対応端末を見る', url: 'https://ssw.web.docomo.ne.jp/wearable/device/' },
+            { text: 'docomo Online Shopへ', url: 'https://onlineshop.docomo.ne.jp/top-ols?utm_source=onenumber&utm_medium=owned&utm_campaign=ons_202502_wearable-top&utm_content=01' }
+          ],
+          showRestart: true
+        },
+        
+        'A1-3': {
+          type: 'response',
+          message: 'ランニング中にスマホを持ち歩かず、音楽を聴いたり、走行距離や心拍数を確認できるのはスマートウォッチならではのメリットですね。\n\nワンナンバーサービスを使えば、スマホを持たずに通話やデータ通信も可能になります。\n\nアクティビティ記録に対応したスマートウォッチ一覧はこちらです。',
+          links: [
+            { text: 'ワンナンバーサービスについて詳しく見る', url: 'https://ssw.web.docomo.ne.jp/wearable/onenumberservice/' },
+            { text: '対応端末を見る', url: 'https://ssw.web.docomo.ne.jp/wearable/device/' },
+            { text: 'docomo Online Shopへ', url: 'https://onlineshop.docomo.ne.jp/top-ols?utm_source=onenumber&utm_medium=owned&utm_campaign=ons_202502_wearable-top&utm_content=01' }
+          ],
+          showRestart: true
+        },
+        
+        'A1-4': {
+          type: 'response',
+          message: 'まだ具体的な用途は決まっていなくても大丈夫です。\n目的やライフスタイルに合わせて、ぴったりのスマートウォッチを選べる診断コンテンツをご用意しています。\n\nまた、使い方の事例や便利な機能についてまとめたページもありますので、イメージを膨らませるのにご活用ください。\n\n人気モデルや対応端末はこちらからご確認いただけます。',
+          links: [
+            { text: 'あなたに合ったスマートウォッチを診断する', url: 'https://ssw.web.docomo.ne.jp/wearable/shindan/' },
+            { text: '便利な使い方を見る', url: 'https://ssw.web.docomo.ne.jp/wearable/scene/' },
+            { text: '対応端末を見る', url: 'https://ssw.web.docomo.ne.jp/wearable/device/' },
+            { text: 'docomo Online Shopへ', url: 'https://onlineshop.docomo.ne.jp/top-ols?utm_source=onenumber&utm_medium=owned&utm_campaign=ons_202502_wearable-top&utm_content=01' }
+          ],
+          showRestart: true
+        },
+        
+        'B2-1': {
+          type: 'handoff',
+          message: 'ありがとうございます。何についてお困りですか？以下の入力欄に質問を自由にご入力ください。\n\n例：「スマートウォッチで通話できない、LINEの通知が来ない」など。',
+          showInput: true
+        },
+        
+        'B2-2': {
+          type: 'question',
+          message: 'スマートウォッチはお持ちなんですね。\nワンナンバーサービスを契約すると、スマホがそばになくても通話やメッセージの送受信ができたり、日常のちょっとした場面で便利に使えるようになります。\n\nライフスタイルに合わせて、活用シーンはいろいろ。\n興味がある使い方を教えてください！',
+          choices: [
+            { id: '1-1', text: '健康管理や睡眠ログ', next: 'A1-1' },
+            { id: '1-2', text: '通話やメッセージの確認', next: 'A1-2' },
+            { id: '1-3', text: 'ランニングやアクティビティ記録', next: 'A1-3' },
+            { id: '1-4', text: '特に決まっていない／\nいろいろ見てみたい', next: 'A1-4' }
+          ],
+          showBack: true
+        },
+        
+        'A3': {
+          type: 'response',
+          message: 'ありがとうございます。まずは、スマートウォッチでどんなことができるのかを知っていただくことから始めましょう。\n\n生活に合わせた活用例や、ぴったりの機種を見つけるための診断コンテンツをご用意しています。',
+          links: [
+            { text: 'スマートウォッチの便利な使い方を見る', url: 'https://ssw.web.docomo.ne.jp/wearable/scene/' },
+            { text: 'あなたに合った機種を診断する', url: 'https://ssw.web.docomo.ne.jp/wearable/shindan/' },
+            { text: 'ワンナンバーサービスについて知る', url: 'https://ssw.web.docomo.ne.jp/wearable/onenumberservice/' },
+            { text: 'docomo Online Shopで製品を見る', url: 'https://onlineshop.docomo.ne.jp/top-ols?utm_source=onenumber&utm_medium=owned&utm_campaign=ons_202502_wearable-top&utm_content=01' }
+          ],
+          showRestart: true
+        }
+      },
+      startNode: 'Q0'
+    },
+    
+    onenumber: {
+      id: 'onenumber',
+      urlPattern: '/wearable/onenumberservice',
+      excludePatterns: [],
+      popup: { message: 'どんなことでお困りですか？' },
+      trigger: { type: 'scroll_return', scrollBottom: 0.95, scrollReturn: 0.8, fallbackDelay: 60000, reShowDelay: 30000 },
+      menu: [
+        { id: 'scene', icon: 'link', text: '便利な使い方のシーンはこちら', url: 'https://ssw.web.docomo.ne.jp/wearable/scene/' },
+        { id: 'onenumber', icon: 'link', text: 'ワンナンバーサービスとは', url: 'https://ssw.web.docomo.ne.jp/wearable/onenumberservice/' },
+        { id: 'shop', icon: 'shop', text: 'docomo OnlineShop', url: 'https://onlineshop.smt.docomo.ne.jp/' },
+        { id: 'faq', icon: 'question', text: 'よくあるご質問', url: 'https://ssw.web.docomo.ne.jp/wearable/faq/' }
+      ],
+      nodes: {
+        'Q0': {
+          type: 'question',
+          message: 'どんなことでお困りですか？',
+          choices: [
+            { id: '1', text: 'ワンナンバーのサービス内容を知りたい', next: 'ON-1' },
+            { id: '2', text: '月額料金や対応機種について知りたい', next: 'ON-2' },
+            { id: '3', text: 'スマートウォッチの設定方法を知りたい', next: 'ON-3' },
+            { id: '4', text: 'オンラインショップでの購入手順が知りたい', next: 'ON-4' },
+            { id: '5', text: 'チャットで質問をする', next: 'ON-5' }
+          ]
+        },
+        
+        'ON-1': {
+          type: 'response',
+          message: 'ワンナンバーサービスは、スマートウォッチなどのデバイスで、スマートフォンと同じ番号で通話やSMSが利用できるサービスです。\n\nたとえば、ランニング中にスマホを持っていなくても、ウォッチだけで通話や通知の確認が可能です。',
+          links: [
+            { text: '詳しくはこちら', url: 'https://ssw.web.docomo.ne.jp/wearable/onenumberservice/' }
+          ],
+          showRestart: true
+        },
+        
+        'ON-2': {
+          type: 'response',
+          message: '月額550円（税込）でご利用いただけます。\n\n対象機種は Apple Watch や Galaxy Watch、dtab などの一部機種です。',
+          links: [
+            { text: '対応機種一覧はこちら', url: 'https://www.docomo.ne.jp/service/one_number/compatible_model/?utm_source=onenumber&utm_medium=owned&utm_campaign=ons_202502_wearable-onenumberservice&utm_content=2' },
+            { text: '料金の詳細はこちら', url: 'https://ssw.web.docomo.ne.jp/wearable/onenumberservice/#service-detail' }
+          ],
+          showRestart: true
+        },
+        
+        'ON-3': {
+          type: 'handoff',
+          message: 'ご利用端末によって設定方法が異なります。\n\n以下の入力欄にご利用端末を入力してください。\n例：「ギャラクシー」など分かる範囲で大丈夫です。',
+          showInput: true
+        },
+        
+        'ON-4': {
+          type: 'response',
+          message: 'docomo Online Shop では、ワンナンバー対応機種やスマートウォッチを直接購入できます。\n\n商品ページからカラーやサイズを選び、「カートに入れる」ボタンでご購入手続きが可能です。',
+          links: [
+            { text: '対応製品を見る', url: 'https://onlineshop.smt.docomo.ne.jp/products/smart_watch/' },
+            { text: 'docomo Online Shop トップ', url: 'https://onlineshop.smt.docomo.ne.jp/' }
+          ],
+          showRestart: true
+        },
+        
+        'ON-5': {
+          type: 'handoff',
+          message: 'ありがとうございます。以下の入力欄に質問を自由にご入力ください。\n\n例：「Apple Watchってドコモで契約できますか？」など。',
+          showInput: true
+        }
+      },
+      startNode: 'Q0'
+    }
+  };
+
+  // ========================================
+  // 状態管理
+  // ========================================
+  var state = {
+    scenario: null,
+    scenarioData: null,
+    popupVisible: false,
+    chatOpen: false,
+    menuExpanded: false,
+    inputVisible: false,
+    hasUnreadPopup: true,
+    messages: [],
+    currentNodeId: null,
+    operationLog: [],
+    selectedByNode: {},
+    triggerFired: false,
+    scrolledToBottom: false,
+    stayTimer: null,
+    scrollLockY: 0,
+    isProcessing: false
+  };
+
+  // ========================================
+  // ユーティリティ
+  // ========================================
+  function createElement(tag, className, attrs) {
+    var el = document.createElement(tag);
+    if (className) el.className = className;
+    if (attrs) {
+      for (var key in attrs) {
+        if (key === 'textContent') el.textContent = attrs[key];
+        else el.setAttribute(key, attrs[key]);
+      }
+    }
+    return el;
+  }
+
+  function getIcon(type) {
+    var c = '#CC0033';
+    switch(type) {
+      case 'link':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+      case 'shop':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+      case 'question':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      default:
+        return '';
+    }
+  }
+
+  function isMobile() {
+    return window.innerWidth < 768;
+  }
+
+  function lockScroll() {
+    if (!isMobile()) return;
+    state.scrollLockY = window.scrollY;
+    document.body.style.cssText = 'position:fixed;top:-' + state.scrollLockY + 'px;left:0;right:0;overflow:hidden;';
+  }
+
+  function unlockScroll() {
+    if (!isMobile()) return;
+    document.body.style.cssText = '';
+    window.scrollTo(0, state.scrollLockY);
+  }
+
+  function scrollToBottom() {
+    var el = document.getElementById('wl-scroll-area');
+    if (!el) return;
+    
+    log('scrollToBottom called');
+    
+    el.scrollTop = el.scrollHeight;
+    
+    setTimeout(function() { el.scrollTop = el.scrollHeight; }, 50);
+    setTimeout(function() { el.scrollTop = el.scrollHeight; }, 100);
+    setTimeout(function() { el.scrollTop = el.scrollHeight; }, 200);
+    setTimeout(function() { el.scrollTop = el.scrollHeight; }, 400);
+  }
+
+  function trackEvent(name, data) {
+    data = data || {};
+    data.scenario = state.scenario;
+    data.nodeId = state.currentNodeId;
+    if (window.dataLayer) {
+      window.dataLayer.push({
+        event: 'wl_chat_' + name,
+        wl_data: data
+      });
+    }
+    log('Event:', name, data);
+  }
+
+  function detectScenario() {
+    var path = window.location.pathname;
+    if (path.indexOf(SCENARIO_DATA.onenumber.urlPattern) !== -1) {
+      return 'onenumber';
+    }
+    if (path.indexOf(SCENARIO_DATA.wearable.urlPattern) !== -1) {
+      var excluded = false;
+      SCENARIO_DATA.wearable.excludePatterns.forEach(function(p) {
+        if (path.indexOf(p) !== -1) excluded = true;
+      });
+      if (!excluded) return 'wearable';
+    }
+    return 'wearable';
+  }
+
+  // ========================================
+  // メッセージ
+  // ========================================
+  function addBotMessage(text, links) {
+    state.messages.push({ type: 'bot', text: text, links: links || [] });
+    renderMessages();
+    scrollToBottom();
+  }
+
+  function addUserMessage(text) {
+    state.messages.push({ type: 'user', text: text });
+    renderMessages();
+    scrollToBottom();
+  }
+
+  function removeMessagesFrom(index) {
+    if (index >= 0) {
+      state.messages = state.messages.slice(0, index);
+      renderMessages();
+    }
+  }
+
+  function renderMessages() {
+    var container = document.getElementById('wl-messages');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    state.messages.forEach(function(msg) {
+      var el = createElement('div', 'wl-message wl-' + msg.type);
+      var bubble = createElement('div', 'wl-bubble');
+      
+      if (msg.type === 'bot') {
+        msg.text.split('\n').forEach(function(line, i) {
+          if (i > 0) bubble.appendChild(document.createElement('br'));
+          if (line.trim()) {
+            var span = createElement('span');
+            span.textContent = line;
+            bubble.appendChild(span);
+          }
+        });
+        if (msg.links && msg.links.length > 0) {
+          msg.links.forEach(function(link) {
+            var a = createElement('a', 'wl-response-link', {
+              href: link.url,
+              textContent: link.text,
+              target: '_blank',
+              rel: 'noopener'
+            });
+            a.addEventListener('click', function() {
+              trackEvent('link_click', { url: link.url, text: link.text });
+            });
+            bubble.appendChild(a);
+          });
+        }
+      } else {
+        bubble.textContent = msg.text;
+      }
+      
+      el.appendChild(bubble);
+      container.appendChild(el);
+    });
+  }
+
+  // ========================================
+  // 選択肢
+  // ========================================
+  function renderChoices(choices, showBack) {
+    var container = document.getElementById('wl-choices');
+    if (!container) return;
+    
+    log('renderChoices:', choices.length, 'choices');
+    
+    container.innerHTML = '';
+    container.classList.remove('wl-hidden');
+    container.classList.remove('wl-no-bg');
+    
+    var selectedInNode = state.selectedByNode[state.currentNodeId] || [];
+    
+    choices.forEach(function(choice) {
+      var btn = createElement('button', 'wl-choice-btn');
+      btn.innerHTML = choice.text.replace(/\n/g, '<br>');
+      
+      if (selectedInNode.indexOf(choice.id) !== -1) {
+        btn.classList.add('wl-selected');
+        btn.disabled = true;
+      } else {
+        btn.addEventListener('click', function() {
+          handleChoice(choice);
+        });
+      }
+      container.appendChild(btn);
+    });
+    
+    if (showBack && state.operationLog.length > 0) {
+      var backBtn = createElement('button', 'wl-back-btn', { textContent: '← 前の選択肢に戻る' });
+      backBtn.addEventListener('click', goBack);
+      container.appendChild(backBtn);
+    }
+    
+    scrollToBottom();
+  }
+
+  function renderRestartButton() {
+    var container = document.getElementById('wl-choices');
+    if (!container) return;
+    container.innerHTML = '';
+    container.classList.remove('wl-hidden');
+    container.classList.add('wl-no-bg');
+    
+    var btn = createElement('button', 'wl-primary-cta', { textContent: '別の質問をする' });
+    btn.addEventListener('click', restart);
+    container.appendChild(btn);
+    
+    scrollToBottom();
+  }
+
+  function clearChoices() {
+    var container = document.getElementById('wl-choices');
+    if (container) {
+      container.innerHTML = '';
+      container.classList.add('wl-hidden');
+      container.classList.remove('wl-no-bg');
+    }
+  }
+
+  function showInput() {
+    var el = document.getElementById('wl-input-area');
+    if (el) {
+      el.classList.add('wl-active');
+      state.inputVisible = true;
+    }
+    clearChoices();
+    scrollToBottom();
+  }
+
+  function hideInput() {
+    var el = document.getElementById('wl-input-area');
+    if (el) {
+      el.classList.remove('wl-active');
+      state.inputVisible = false;
+    }
+  }
+
+  // ========================================
+  // ノード遷移
+  // ========================================
+  function goToNode(nodeId) {
+    var node = state.scenarioData.nodes[nodeId];
+    if (!node) {
+      log('goToNode: node not found:', nodeId);
+      return;
+    }
+    
+    log('goToNode:', nodeId, 'type:', node.type);
+    
+    if (state.currentNodeId) {
+      state.operationLog.push({
+        fromNodeId: state.currentNodeId,
+        toNodeId: nodeId,
+        msgCount: state.messages.length
+      });
+    }
+    
+    state.currentNodeId = nodeId;
+    addBotMessage(node.message, node.links);
+    
+    switch (node.type) {
+      case 'question':
+        renderChoices(node.choices, node.showBack);
+        hideInput();
+        state.isProcessing = false;
+        break;
+        
+      case 'response':
+        if (node.showRestart) {
+          renderRestartButton();
+        } else {
+          clearChoices();
+        }
+        hideInput();
+        state.isProcessing = false;
+        break;
+        
+      case 'handoff':
+        showInput();
+        var ta = document.getElementById('wl-input');
+        if (ta) {
+          setTimeout(function() { ta.focus(); }, 300);
+        }
+        state.isProcessing = false;
+        break;
+    }
+    
+    trackEvent('node_view', { nodeId: nodeId, nodeType: node.type });
+  }
+
+  function handleChoice(choice) {
+    if (state.isProcessing) {
+      log('handleChoice: blocked');
+      return;
+    }
+    state.isProcessing = true;
+    
+    log('handleChoice:', choice.id);
+    
+    addUserMessage(choice.text.replace(/\n/g, ' '));
+    
+    if (!state.selectedByNode[state.currentNodeId]) {
+      state.selectedByNode[state.currentNodeId] = [];
+    }
+    state.selectedByNode[state.currentNodeId].push(choice.id);
+    
+    trackEvent('choice_click', { choiceId: choice.id, choiceText: choice.text });
+    goToNode(choice.next);
+  }
+
+  function goBack() {
+    if (state.operationLog.length === 0) return;
+    
+    log('goBack');
+    
+    var lastOp = state.operationLog.pop();
+    if (!lastOp) return;
+    
+    removeMessagesFrom(lastOp.msgCount);
+    
+    var fromNode = lastOp.fromNodeId;
+    if (state.selectedByNode[fromNode] && state.selectedByNode[fromNode].length > 0) {
+      state.selectedByNode[fromNode].pop();
+    }
+    
+    state.currentNodeId = lastOp.fromNodeId;
+    var node = state.scenarioData.nodes[state.currentNodeId];
+    if (node && node.type === 'question') {
+      renderChoices(node.choices, node.showBack);
+    }
+    
+    state.isProcessing = false;
+    hideInput();
+    scrollToBottom();
+    trackEvent('go_back', { toNodeId: state.currentNodeId });
+  }
+
+  function restart() {
+    log('restart');
+    
+    state.selectedByNode = {};
+    state.operationLog = [];
+    state.messages = [];
+    state.isProcessing = false;
+    
+    var el = document.getElementById('wl-messages');
+    if (el) el.innerHTML = '';
+    
+    goToNode(state.scenarioData.startNode);
+    trackEvent('restart');
+  }
+
+  // ========================================
+  // メニュー
+  // ========================================
+  function toggleMenu() {
+    state.menuExpanded = !state.menuExpanded;
+    
+    var dd = document.getElementById('wl-menu-dropdown');
+    var btn = document.getElementById('wl-menu-open-btn');
+    
+    if (dd) dd.classList.toggle('wl-expanded', state.menuExpanded);
+    if (btn) {
+      btn.classList.toggle('wl-expanded', state.menuExpanded);
+      var t = btn.querySelector('.wl-menu-text');
+      if (t) t.textContent = state.menuExpanded ? 'メニューを閉じる' : 'メニューを開く';
+    }
+    
+    if (state.menuExpanded) trackEvent('menu_open');
+  }
+
+  function closeMenu() {
+    if (!state.menuExpanded) return;
+    
+    state.menuExpanded = false;
+    var dd = document.getElementById('wl-menu-dropdown');
+    var btn = document.getElementById('wl-menu-open-btn');
+    
+    if (dd) dd.classList.remove('wl-expanded');
+    if (btn) {
+      btn.classList.remove('wl-expanded');
+      var t = btn.querySelector('.wl-menu-text');
+      if (t) t.textContent = 'メニューを開く';
+    }
+  }
+
+  // ========================================
+  // ポップアップ
+  // ========================================
+  function showPopup() {
+    var el = document.getElementById('wl-popup');
+    if (el) {
+      el.classList.add('wl-visible');
+      state.popupVisible = true;
+      state.hasUnreadPopup = true;
+      updatePopupBadge();
+      trackEvent('popup_show');
+    }
+  }
+
+  function hidePopup() {
+    var el = document.getElementById('wl-popup');
+    if (el) {
+      el.classList.remove('wl-visible');
+      state.popupVisible = false;
+    }
+  }
+
+  function updatePopupBadge() {
+    var el = document.getElementById('wl-popup-badge');
+    if (el) el.classList.toggle('wl-hidden', !state.hasUnreadPopup);
+  }
+
+  // ========================================
+  // チャット画面
+  // ========================================
+  function openChatScreen() {
+    var overlay = document.getElementById('wl-chat-overlay');
+    var container = overlay ? overlay.querySelector('.wl-chat-container') : null;
+    if (!overlay || !container) return;
+    
+    lockScroll();
+    overlay.classList.add('wl-active');
+    
+    setTimeout(function() {
+      container.classList.add('wl-expanded');
+    }, 50);
+    
+    state.chatOpen = true;
+    state.hasUnreadPopup = false;
+    updatePopupBadge();
+    
+    if (state.messages.length === 0) {
+      setTimeout(function() {
+        goToNode(state.scenarioData.startNode);
+      }, 400);
+    }
+    
+    trackEvent('chat_open');
+  }
+
+  function closeChatScreen() {
+    var overlay = document.getElementById('wl-chat-overlay');
+    var container = overlay ? overlay.querySelector('.wl-chat-container') : null;
+    if (!overlay || !container) return;
+    
+    closeMenu();
+    container.classList.remove('wl-expanded');
+    
+    setTimeout(function() {
+      overlay.classList.remove('wl-active');
+      unlockScroll();
+    }, 400);
+    
+    state.chatOpen = false;
+    
+    var delay = state.scenarioData.trigger.reShowDelay || 30000;
+    setTimeout(function() {
+      if (!state.chatOpen) showPopup();
+    }, delay);
+    
+    trackEvent('chat_close');
+  }
+
+  // ========================================
+  // トリガー - scroll_return のみ使用
+  // ========================================
+  function setupTrigger() {
+    var t = state.scenarioData.trigger;
+    
+    setupScrollReturnTrigger(t);
+    
+    setTimeout(function() {
+      if (!state.triggerFired) {
+        state.triggerFired = true;
+        showPopup();
+      }
+    }, t.fallbackDelay || 60000);
+  }
+
+  function setupScrollReturnTrigger(t) {
+    function check() {
+      if (state.triggerFired) return;
+      
+      var st = window.pageYOffset || document.documentElement.scrollTop;
+      var dh = document.documentElement.scrollHeight - window.innerHeight;
+      var sp = dh > 0 ? st / dh : 0;
+      
+      if (!state.scrolledToBottom && sp >= t.scrollBottom) {
+        state.scrolledToBottom = true;
+        log('Scroll: reached bottom (' + (sp * 100).toFixed(0) + '%)');
+      }
+      
+      if (state.scrolledToBottom && sp <= t.scrollReturn) {
+        state.triggerFired = true;
+        window.removeEventListener('scroll', check);
+        log('Scroll: returned up (' + (sp * 100).toFixed(0) + '%) - showing popup');
+        showPopup();
+      }
+    }
+    
+    window.addEventListener('scroll', check, { passive: true });
+  }
+
+  // ========================================
+  // DOM生成
+  // ========================================
+  function createPopup() {
+    var popup = createElement('div', 'wl-popup', { id: 'wl-popup' });
+    var container = createElement('div', 'wl-popup-container');
+    
+    container.addEventListener('click', function() {
+      hidePopup();
+      openChatScreen();
+      trackEvent('popup_click');
+    });
+    
+    var badge = createElement('div', 'wl-popup-badge', { id: 'wl-popup-badge' });
+    var avatar = createElement('img', 'wl-popup-avatar', {
+      src: CONFIG.avatarUrl,
+      alt: 'アシスタント'
+    });
+    var text = createElement('div', 'wl-popup-text');
+    text.textContent = state.scenarioData.popup.message;
+    
+    container.appendChild(badge);
+    container.appendChild(avatar);
+    container.appendChild(text);
+    popup.appendChild(container);
+    
+    return popup;
+  }
+
+  function createChatScreen() {
+    var overlay = createElement('div', 'wl-chat-overlay', {
+      id: 'wl-chat-overlay',
+      role: 'dialog',
+      'aria-modal': 'true'
+    });
+    var container = createElement('div', 'wl-chat-container');
+    
+    var header = createElement('header', 'wl-header');
+    var title = createElement('span', 'wl-header-title', { textContent: CONFIG.title });
+    
+    var menuBtn = createElement('button', 'wl-menu-open-btn', { id: 'wl-menu-open-btn' });
+    var menuText = createElement('span', 'wl-menu-text', { textContent: 'メニューを開く' });
+    var menuArrow = createElement('span', 'wl-arrow', { textContent: '▼' });
+    menuBtn.appendChild(menuText);
+    menuBtn.appendChild(menuArrow);
+    menuBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleMenu();
+    });
+    
+    header.appendChild(title);
+    header.appendChild(menuBtn);
+    
+    var main = createElement('main', 'wl-chat-main', { id: 'wl-chat-main' });
+    
+    var personArea = createElement('div', 'wl-person-area');
+    var personImage = createElement('img', 'wl-person-image', {
+      src: CONFIG.avatarUrl,
+      alt: 'アシスタント'
+    });
+    personArea.appendChild(personImage);
+    
+    var scrollArea = createElement('div', 'wl-scroll-area', { id: 'wl-scroll-area' });
+    var messages = createElement('div', 'wl-messages', { id: 'wl-messages' });
+    var choices = createElement('div', 'wl-choices wl-hidden', { id: 'wl-choices' });
+    
+    var inputArea = createElement('div', 'wl-input-area', { id: 'wl-input-area' });
+    var textarea = createElement('textarea', 'wl-input', {
+      id: 'wl-input',
+      placeholder: '質問を入力してください',
+      rows: '1'
+    });
+    textarea.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+    textarea.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    
+    var sendBtn = createElement('button', 'wl-send-btn', { textContent: '➤' });
+    sendBtn.addEventListener('click', sendMessage);
+    
+    inputArea.appendChild(textarea);
+    inputArea.appendChild(sendBtn);
+    
+    scrollArea.appendChild(messages);
+    scrollArea.appendChild(choices);
+    scrollArea.appendChild(inputArea);
+    
+    main.appendChild(personArea);
+    main.appendChild(scrollArea);
+    
+    var menuDropdown = createElement('div', 'wl-menu-dropdown', { id: 'wl-menu-dropdown' });
+    state.scenarioData.menu.forEach(function(item) {
+      var mi = createElement('a', 'wl-menu-item', {
+        href: item.url,
+        target: '_blank',
+        rel: 'noopener'
+      });
+      var icon = createElement('span', 'wl-menu-item-icon');
+      icon.innerHTML = getIcon(item.icon);
+      var text = createElement('span', '', { textContent: item.text });
+      mi.appendChild(icon);
+      mi.appendChild(text);
+      mi.addEventListener('click', function() {
+        trackEvent('menu_click', { menuId: item.id, url: item.url });
+      });
+      menuDropdown.appendChild(mi);
+    });
+    
+    var footer = createElement('footer', 'wl-footer');
+    var closeBtn = createElement('button', 'wl-close-chat-btn');
+    var arrowDown = createElement('span', 'wl-arrow-down');
+    arrowDown.innerHTML = '<svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 1.08159L10.9091 0L6.00256 4.84188L1.09603 0L0 1.08159L5.99744 7H6.00256L12 1.08159Z" fill="#CC0033"/><path d="M12 8.08159L10.9091 7L6.00256 11.8419L1.09603 7L0 8.08159L5.99744 14H6.00256L12 8.08159Z" fill="#CC0033"/></svg>';
+    var closeText = createElement('span', '', { textContent: 'QAアシスタントを終了する' });
+    closeBtn.appendChild(arrowDown);
+    closeBtn.appendChild(closeText);
+    closeBtn.addEventListener('click', closeChatScreen);
+    footer.appendChild(closeBtn);
+    
+    container.appendChild(header);
+    container.appendChild(main);
+    container.appendChild(menuDropdown);
+    container.appendChild(footer);
+    overlay.appendChild(container);
+    
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) {
+        if (state.menuExpanded) closeMenu();
+        else closeChatScreen();
+      }
+    });
+    
+    container.addEventListener('click', function(e) {
+      if (state.menuExpanded && !e.target.closest('.wl-menu-dropdown') && !e.target.closest('.wl-menu-open-btn')) {
+        closeMenu();
+      }
+    });
+    
+    return overlay;
+  }
+
+  function sendMessage() {
+    var ta = document.getElementById('wl-input');
+    if (!ta) return;
+    
+    var text = ta.value.trim();
+    if (!text) return;
+    
+    ta.value = '';
+    ta.style.height = 'auto';
+    
+    addUserMessage(text);
+    hideInput();
+    trackEvent('input_submit', { inputText: text });
+    
+    setTimeout(function() {
+      addBotMessage('チャットでの自動対話は現在開発中', []);
+      renderRestartButton();
+    }, 1000);
+  }
+
+  function setupKeyboardEvents() {
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        if (state.menuExpanded) closeMenu();
+        else if (state.chatOpen) closeChatScreen();
+      }
+    });
+  }
+
+  // ========================================
+  // 初期化
+  // ========================================
+  function init() {
+    log('Initializing v6.9.0 - Simplified scroll_return trigger');
+    
+    state.scenario = detectScenario();
+    state.scenarioData = SCENARIO_DATA[state.scenario];
+    
+    document.body.appendChild(createPopup());
+    document.body.appendChild(createChatScreen());
+    
+    new Image().src = CONFIG.avatarUrl;
+    
+    setupKeyboardEvents();
+    setupTrigger();
+    
+    log('Initialization complete - Scenario:', state.scenario);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

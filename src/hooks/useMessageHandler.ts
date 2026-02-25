@@ -331,6 +331,7 @@ const addResultAndRatingMessages = (
       id: Date.now() + Math.random() + 1000,
       type: 'company',
       content: messageContent,
+      hideIcon: true,
       timestamp: new Date(),
       conversationStatus: {
         state: currentConversation.state,

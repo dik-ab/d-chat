@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Divider } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 
 interface Faq {
   question: string;
@@ -24,27 +26,8 @@ interface FaqTilesMessageProps {
   onUrlClick?: (url: string) => void;
 }
 
-const IconWrapper = styled(Box)(() => ({
-  width: '32px',
-  height: '32px',
-  borderRadius: '50%',
-  overflow: 'hidden',
-  flexShrink: 0,
-}));
-
-const IconImage = styled('img')(() => ({
+const MessageBubble = styled(Box)(() => ({
   width: '100%',
-  height: '100%',
-  objectFit: 'cover',
-}));
-
-const MessageBubble = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'bgColor',
-})<{ bgColor: string }>(({ bgColor }) => ({
-  width: '100%',
-  backgroundColor: bgColor,
-  borderRadius: '32px',
-  padding: '16px',
   boxSizing: 'border-box',
   marginBottom: '8px',
 }));
@@ -54,23 +37,92 @@ const MessageText = styled(Typography)(() => ({
   fontSize: '14px',
   fontWeight: 500,
   lineHeight: '21px',
-  color: '#FFFFFF',
+  color: '#333333',
   wordBreak: 'break-word',
   whiteSpace: 'pre-wrap',
   '& a': {
-    color: '#FFFFFF',
+    color: '#1976D2',
     textDecoration: 'underline',
   },
 }));
 
-const Separator = styled(Typography)(() => ({
+const RichHtmlContent = styled(Box)(() => ({
+  fontFamily: '"Noto Sans", sans-serif',
+  fontSize: '14px',
+  fontWeight: 500,
+  lineHeight: '21px',
+  color: '#333333',
+  wordBreak: 'break-word',
+  '& p': { margin: '0 0 8px 0', '&:last-child': { marginBottom: 0 } },
+  '& h3': { fontSize: '14px', fontWeight: 700, margin: '12px 0 8px 0' },
+  '& ul': { margin: '4px 0 8px 0', paddingLeft: '20px', listStyleType: 'disc' },
+  '& ol': { margin: '4px 0 8px 0', paddingLeft: '20px', listStyleType: 'decimal' },
+  '& li': { marginBottom: '4px', '& ol': { marginTop: '4px' } },
+  '& strong': { fontWeight: 700 },
+  '& hr': { border: 'none', borderTop: '1px solid #E0E0E0', margin: '12px 0' },
+  '& a': { color: '#1976D2', textDecoration: 'underline' },
+}));
+
+const containsHtmlBlockTags = (text: string): boolean => {
+  return /<(p|ul|ol|li|h[1-6]|strong|br|hr|div|table)\b/i.test(text);
+};
+
+const QLabel = styled(Box)(() => ({
+  width: '24px',
+  height: '24px',
+  borderRadius: '50%',
+  backgroundColor: '#1976D2',
+  color: '#FFFFFF',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontFamily: '"Noto Sans", sans-serif',
+  fontSize: '13px',
+  fontWeight: 700,
+  flexShrink: 0,
+}));
+
+const QuestionRow = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '8px',
+  width: '100%',
+}));
+
+const QuestionText = styled(Typography)(() => ({
+  fontFamily: '"Noto Sans", sans-serif',
+  fontSize: '14px',
+  fontWeight: 500,
+  lineHeight: '24px',
+  color: '#333333',
+  wordBreak: 'break-word',
+  flex: 1,
+}));
+
+const AnswerToggle = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px',
+  cursor: 'pointer',
+  flexShrink: 0,
+  color: '#1976D2',
+  '&:hover': {
+    opacity: 0.8,
+  },
+}));
+
+const AnswerToggleText = styled(Typography)(() => ({
   fontFamily: '"Noto Sans", sans-serif',
   fontSize: '12px',
-  fontWeight: 400,
-  lineHeight: '18px',
-  color: '#888888',
-  textAlign: 'center',
-  margin: '16px 0',
+  fontWeight: 500,
+  lineHeight: '24px',
+  color: '#1976D2',
+  whiteSpace: 'nowrap',
+}));
+
+const AnswerContent = styled(Box)(() => ({
+  paddingTop: '12px',
+  paddingLeft: '32px',
 }));
 
 /**
@@ -80,11 +132,25 @@ const Separator = styled(Typography)(() => ({
  */
 export const FaqTilesMessage: React.FC<FaqTilesMessageProps> = ({
   faqs,
-  iconUrl,
-  backgroundColor = '#00A79E',
+  // iconUrl は互換性のため props に残すが現在は未使用
+  // backgroundColor は互換性のため props に残すが現在は未使用
   className = '',
   onUrlClick,
 }) => {
+  const [expandedIndexes, setExpandedIndexes] = useState<Set<number>>(new Set());
+
+  const toggleExpand = (index: number) => {
+    setExpandedIndexes((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
   const handleUrlClick = (url: string) => {
     if (onUrlClick) {
       onUrlClick(url);
@@ -128,40 +194,53 @@ export const FaqTilesMessage: React.FC<FaqTilesMessageProps> = ({
 
   return (
     <Box className={className} sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-      {faqs.map((faq, index) => (
-        <React.Fragment key={index}>
-          {/* セパレーター */}
-          <Separator>-----{index + 1}件目の回答-----</Separator>
+      {faqs.map((faq, index) => {
+        const isExpanded = expandedIndexes.has(index);
+        return (
+          <React.Fragment key={index}>
+            {/* 区切り線 */}
+            <Divider sx={{ my: '12px' }} />
 
-          <Box sx={{ display: 'flex', gap: '8px' }}>
-            {/* アイコン */}
-            {iconUrl && (
-              <IconWrapper>
-                <IconImage src={iconUrl} alt="assistant" />
-              </IconWrapper>
-            )}
+            {/* 質問行: Q + 質問文 + 回答はこちら */}
+            <QuestionRow>
+              <QLabel>Q</QLabel>
+              <QuestionText>{faq.question}</QuestionText>
+              <AnswerToggle onClick={() => toggleExpand(index)}>
+                <AnswerToggleText>回答はこちら</AnswerToggleText>
+                {isExpanded ? (
+                  <RemoveIcon sx={{ fontSize: '20px' }} />
+                ) : (
+                  <AddIcon sx={{ fontSize: '20px' }} />
+                )}
+              </AnswerToggle>
+            </QuestionRow>
 
-            {/* メッセージ */}
-            <Box sx={{ flex: 1 }}>
-              {/* 回答 */}
-              <MessageBubble id={`faq-answer-${index}`} bgColor={backgroundColor}>
-                <MessageText>{parseMessageWithLinks(faq.answer)}</MessageText>
-              </MessageBubble>
-
-              {/* 関連URL */}
-              {faq.related_url && (
-                <MessageBubble bgColor={backgroundColor}>
-                  <MessageText>
-                    {parseMessageWithLinks(
-                      `操作や情報などを詳しく知りたい場合は<a href="${faq.related_url}" target="_blank">こちらのページ</a>をご確認ください。`
-                    )}
-                  </MessageText>
+            {/* 回答（展開時のみ表示） */}
+            {isExpanded && (
+              <AnswerContent>
+                <MessageBubble id={`faq-answer-${index}`}>
+                  {containsHtmlBlockTags(faq.answer) ? (
+                    <RichHtmlContent dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                  ) : (
+                    <MessageText>{parseMessageWithLinks(faq.answer)}</MessageText>
+                  )}
                 </MessageBubble>
-              )}
-            </Box>
-          </Box>
-        </React.Fragment>
-      ))}
+
+                {/* 関連URL */}
+                {faq.related_url && (
+                  <MessageBubble>
+                    <MessageText>
+                      {parseMessageWithLinks(
+                        `操作や情報などを詳しく知りたい場合は<a href="${faq.related_url}" target="_blank">こちらのページ</a>をご確認ください。`
+                      )}
+                    </MessageText>
+                  </MessageBubble>
+                )}
+              </AnswerContent>
+            )}
+          </React.Fragment>
+        );
+      })}
     </Box>
   );
 };

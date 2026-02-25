@@ -182,16 +182,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             width: '100%',
             height: '100%',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             flexDirection: 'column',
-            gap: 2
+            padding: '16px',
           }}
         >
-          <CircularProgress />
-          <Box sx={{ fontSize: '14px', color: 'text.secondary' }}>
-            チャット設定を読み込み中...
-          </Box>
+          <LoadingMessage />
         </Box>
       </ThemeProvider>
     );
@@ -429,14 +424,15 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                     display: 'flex',
                     justifyContent: 'flex-start'
                   }}>
-                    <Box sx={{ 
-                      maxWidth: message.isRatingMessage && message.ratingData ? '320px' : '100%',
-                      width: message.isRatingMessage && message.ratingData ? '320px' : 'auto'
+                    <Box sx={{
+                      maxWidth: '100%',
+                      width: 'auto'
                     }}>
-                      <CompanyMessage 
+                      <CompanyMessage
                         message={message.content}
                         backgroundColor={chatSetting?.assistant_speech_bubble_color}
                         iconUrl={chatSetting?.assistant_icon_url}
+                        hideIcon={message.hideIcon}
                         ratingData={message.isRatingMessage && message.ratingData ? {
                           matchedMessage: message.ratingData.matchedMessage,
                           unmatchedMessage: message.ratingData.unmatchedMessage,

@@ -4,6 +4,7 @@ export interface Message {
   content: string;
   timestamp: Date;
   isRatingMessage?: boolean;
+  hideIcon?: boolean;
   ratingData?: {
     matchedMessage: string;
     unmatchedMessage: string;
