@@ -49,7 +49,7 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
       {/* 結果メッセージ */}
       <Typography
         sx={{
-          color: '#FFFFFF',
+          color: '#333333',
           lineHeight: 1.5,
           marginBottom: contactPageUrl ? '8px' : '10px',
           fontSize: '14px',
@@ -74,7 +74,7 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
               }
             }}
             sx={{
-              color: '#FFFFFF',
+              color: '#1976D2',
               textDecoration: 'underline',
               fontSize: '14px',
               fontFamily: '"Noto Sans", sans-serif',
@@ -93,7 +93,7 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
       {/* 評価依頼メッセージ */}
       <Typography
         sx={{
-          color: '#FFFFFF',
+          color: '#333333',
           lineHeight: 1.5,
           marginBottom: '8px',
           fontSize: '14px',
@@ -110,18 +110,23 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
         <Box
           sx={{
             display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: '8px',
             marginTop: '-4px',
+            '& img': {
+              width: '100%',
+              height: 'auto',
+            },
           }}
         >
-          <Box sx={{ marginBottom: '-10px' }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <SurveyButton
               type="yes"
               onClick={() => handleRating('good')}
             />
           </Box>
-          <Box sx={{ marginBottom: '-8px' }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <SurveyButton
               type="no"
               onClick={() => handleRating('bad')}
@@ -134,7 +139,7 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
       {hasRated && (
         <Typography
           sx={{
-            color: 'rgba(255, 255, 255, 0.8)',
+            color: '#888888',
             textAlign: 'center',
             fontSize: '14px',
             fontFamily: '"Noto Sans", sans-serif',
